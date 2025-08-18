@@ -4,6 +4,9 @@
   "epicshop": {
     "title": "MCP UI 🪟",
     "subtitle": "Go beyond text interaction in AI Chat",
+    "sidecarProcesses": {
+      "EpicMeApp": "npm run dev --prefix ./epicshop/epic-me -- --clearScreen=false --logLevel=error --strictPort"
+    },
     "githubRepo": "https://github.com/epicweb-dev/mcp-ui",
     "subdomain": "mcp-ui",
     "instructor": {
@@ -38,7 +41,9 @@
   "license": "GPL-3.0-only",
   "workspaces": [
     "exercises/*/*",
-    "examples/*"
+    "examples/*",
+    "epicshop/mcp-dev",
+    "epicshop/epic-me/workers/db/client"
   ],
   "engines": {
     "node": "^18.19.0 || >=20.5.0",
