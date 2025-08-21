@@ -16,9 +16,60 @@ export async function getJournalViewUI(db: DBClient) {
 	`
 }
 
-export async function getEntryViewUI(db: DBClient, entryId: number) {
-	const entry = await db.getEntry(entryId)
-	if (!entry) {
+export async function getTagRemoteDomUIScript(db: DBClient, tagId: number) {
+	const tag = await db.getTag(tagId)
+	if (!tag) {
+		return /* js */ `
+			console.error('Tag not found');
+			const stack = document.createElement('ui-stack');
+			stack.setAttribute('direction', 'vertical');
+			stack.setAttribute('spacing', '20');
+			stack.setAttribute('align', 'center');
+			const title = document.createElement('ui-text');
+			title.setAttribute('content', 'Tag not found');
+			stack.appendChild(title);
+			root.appendChild(stack);
+		`
+	} else {
+		return /* js */ `
+			console.log('Tag found:', ${tag.name});
+			const stack = document.createElement('ui-stack');
+			stack.setAttribute('direction', 'vertical');
+			stack.setAttribute('spacing', '20');
+			stack.setAttribute('align', 'center');
+			
+			const title = document.createElement('ui-text');
+			title.setAttribute('content', ${JSON.stringify(tag.name)});
+			stack.appendChild(title);
+
+			const description = document.createElement('ui-text');
+			description.setAttribute('content', ${JSON.stringify(tag.description)});
+			stack.appendChild(description);
+
+			const deleteButton = document.createElement('ui-button');
+			deleteButton.setAttribute('content', 'Delete Tag');
+			deleteButton.addEventListener('press', () => {
+				window.parent.postMessage(
+					{
+						type: 'tool',
+						payload: {
+							toolName: 'deleteTag',
+							params: { tagId: tag.id.toString() },
+						},
+					},
+					'*',
+				)
+			});
+			stack.appendChild(deleteButton);
+
+			root.appendChild(stack);
+		`
+	}
+}
+
+export async function getTagViewUI(db: DBClient, tagId: number) {
+	const tag = await db.getTag(tagId)
+	if (!tag) {
 		return /* html */ `
 <html>
 	${getHead()}
@@ -26,8 +77,7 @@ export async function getEntryViewUI(db: DBClient, entryId: number) {
 		<div class="container">
 			<div class="error-state">
 				${createIcon('alert-circle', 'error-icon')}
-				<h1>Entry not found</h1>
-				${createButton('Go Back', '/', 'secondary')}
+				<h1>Tag with id ${tagId} not found</h1>
 			</div>
 		</div>
 </html>
@@ -38,16 +88,8 @@ export async function getEntryViewUI(db: DBClient, entryId: number) {
 	${getHead()}
 	<body>
 		<div class="container">
-			<h1 class="title">${entry.title}</h1>
-			<article class="entry-content">
-				<div class="entry-meta">
-					${createIcon('calendar', 'meta-icon')}
-					<span>Created: ${new Date().toLocaleDateString()}</span>
-				</div>
-				<div class="content">
-					${entry.content}
-				</div>
-			</article>
+			<h1 class="title">${tag.name}</h1>
+			<p class="description">${tag.description}</p>
 		</div>
 </html>
 	`
@@ -56,19 +98,10 @@ export async function getEntryViewUI(db: DBClient, entryId: number) {
 // UI Components
 function createButton(
 	text: string,
-	href?: string,
 	variant: 'primary' | 'secondary' = 'primary',
 ) {
 	const baseClass = `btn btn-${variant}`
-	if (href) {
-		return `<a href="${href}" class="${baseClass}">${text}</a>`
-	}
 	return `<button class="${baseClass}">${text}</button>`
-}
-
-function createLink(href: string, text: string, iconName?: string) {
-	const icon = iconName ? createIcon(iconName, 'link-icon') : ''
-	return `<a href="${href}" class="link">${icon}${text}</a>`
 }
 
 function createIcon(name: string, className?: string) {
@@ -76,7 +109,11 @@ function createIcon(name: string, className?: string) {
 	return `<span class="${iconClass}" data-icon="${name}">${getIconSvg(name)}</span>`
 }
 
-function createEntryCard(entry: any) {
+function createEntryCard(entry: {
+	id: number
+	title: string
+	tagCount: number
+}) {
 	return /* html */ `
 		<article class="entry-card">
 			<div class="card-header">
@@ -84,10 +121,7 @@ function createEntryCard(entry: any) {
 				<h3 class="card-title">${entry.title}</h3>
 			</div>
 			<div class="card-content">
-				<p>${entry.content.substring(0, 100)}${entry.content.length > 100 ? '...' : ''}</p>
-			</div>
-			<div class="card-actions">
-				${createButton('View', `/entry/${entry.id}`, 'primary')}
+				<p>${entry.tagCount} tags</p>
 			</div>
 		</article>
 	`
@@ -273,38 +307,7 @@ function getStyles() {
 			margin-bottom: 1.5rem;
 			color: #64748b;
 		}
-		
-		.card-actions {
-			display: flex;
-			justify-content: flex-end;
-		}
-		
-		/* Entry Content */
-		.entry-content {
-			background: white;
-			padding: 2rem;
-			border-radius: 0.75rem;
-			box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-			border: 1px solid #e2e8f0;
-		}
-		
-		.entry-meta {
-			display: flex;
-			align-items: center;
-			gap: 0.5rem;
-			margin-bottom: 1.5rem;
-			padding-bottom: 1rem;
-			border-bottom: 1px solid #e2e8f0;
-			color: #64748b;
-			font-size: 0.875rem;
-		}
-		
-		.content {
-			font-size: 1.125rem;
-			line-height: 1.7;
-			color: #334155;
-		}
-		
+
 		/* Error State */
 		.error-state {
 			text-align: center;
@@ -320,10 +323,6 @@ function getStyles() {
 		@media (max-width: 768px) {
 			.entries-grid {
 				grid-template-columns: 1fr;
-			}
-			
-			.entry-content {
-				padding: 1.5rem;
 			}
 		}
 	`
