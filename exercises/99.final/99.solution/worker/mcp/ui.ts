@@ -11,10 +11,10 @@ export async function getTagViewUI(db: DBClient, tagId: number) {
 			<title>Epic Me</title>
 			<style>
 				* { margin: 0; padding: 0; box-sizing: border-box; }
-				body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; background-color: #f8fafc; }
+				body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: oklch(25% 0.05 60); background-color: oklch(98% 0.02 60); }
 				.container { max-width: 1200px; margin: 0 auto; padding: 2rem 1rem; }
-				.title { font-size: 2rem; font-weight: 700; color: #1e293b; margin-bottom: 2rem; text-align: center; }
-				.description { text-align: center; color: #64748b; }
+				.title { font-size: 2rem; font-weight: 700; color: oklch(25% 0.05 60); margin-bottom: 2rem; text-align: center; }
+				.description { text-align: center; color: oklch(45% 0.06 60); }
 			</style>
 		</head>
 		<body>
@@ -35,13 +35,13 @@ export async function getTagViewUI(db: DBClient, tagId: number) {
 		<title>Epic Me</title>
 		<style>
 			* { margin: 0; padding: 0; box-sizing: border-box; }
-			body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; background-color: #f8fafc; }
+			body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: oklch(25% 0.05 60); background-color: oklch(98% 0.02 60); }
 			.container { max-width: 1200px; margin: 0 auto; padding: 2rem 1rem; }
-			.title { font-size: 2rem; font-weight: 700; color: #1e293b; margin-bottom: 2rem; text-align: center; }
-			.description { text-align: center; color: #64748b; }
+			.title { font-size: 2rem; font-weight: 700; color: oklch(25% 0.05 60); margin-bottom: 2rem; text-align: center; }
+			.description { text-align: center; color: oklch(45% 0.06 60); }
 			.error-state { text-align: center; padding: 4rem 2rem; }
-			.error-state h1 { margin: 1rem 0 2rem; color: #1e293b; }
-			.error-icon { color: #ef4444; width: 3rem; height: 3rem; display: inline-flex; align-items: center; justify-content: center; }
+			.error-state h1 { margin: 1rem 0 2rem; color: oklch(25% 0.05 60); }
+			.error-icon { color: oklch(60% 0.22 25); width: 3rem; height: 3rem; display: inline-flex; align-items: center; justify-content: center; }
 			.error-icon svg { width: 100%; height: 100%; }
 		</style>
 	</head>

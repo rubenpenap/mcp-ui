@@ -62,7 +62,7 @@ export function useFormSubmissionCapability() {
 	return canUseOnSubmit
 }
 
-function createMcpMessageHandler<T>(
+function createMcpMessageHandler<T extends unknown>(
 	type: string,
 	payload: Record<string, unknown>,
 	signal?: AbortSignal,
@@ -99,24 +99,24 @@ function createMcpMessageHandler<T>(
 	})
 }
 
-export function callTool(
+export function callTool<ReturnType extends unknown>(
 	toolName: string,
 	params: any,
 	signal?: AbortSignal,
-): Promise<any> {
+): Promise<ReturnType> {
 	return createMcpMessageHandler('tool', { toolName, params }, signal)
 }
 
-export function sendPrompt(
+export function sendPrompt<ReturnType extends unknown>(
 	prompt: string,
 	signal?: AbortSignal,
-): Promise<void> {
+): Promise<ReturnType> {
 	return createMcpMessageHandler('prompt', { prompt }, signal)
 }
 
-export function navigateToLink(
+export function navigateToLink<ReturnType extends unknown>(
 	url: string,
 	signal?: AbortSignal,
-): Promise<void> {
+): Promise<ReturnType> {
 	return createMcpMessageHandler('link', { url }, signal)
 }

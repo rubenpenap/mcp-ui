@@ -77,7 +77,7 @@ export async function initializeTools(agent: EpicMeMCP) {
 						uri: `ui://view-journal/${Date.now()}`,
 						content: {
 							type: 'externalUrl',
-							iframeUrl: `${agent.props.baseUrl}/journal`,
+							iframeUrl: `${agent.props.baseUrl}/ui/journal-viewer`,
 						},
 						encoding: 'text',
 					}),
