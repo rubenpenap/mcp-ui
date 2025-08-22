@@ -11,7 +11,11 @@ export async function getJournalViewUI(db: DBClient) {
 			<div class="entries-grid">
 				${entries.map((entry) => createEntryCard(entry)).join('')}
 			</div>
+			<div class="footer">
+				<p>Powered by <a href="https://example.com" target="_blank">Epic Me</a></p>
+			</div>
 		</div>
+	</body>
 </html>
 	`
 }
