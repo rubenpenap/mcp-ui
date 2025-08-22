@@ -1,4 +1,10 @@
-import { useMcpUiInit } from '#app/utils/mcp.ts'
+import { useTransition } from 'react'
+import {
+	ErrorBoundary,
+	useErrorBoundary,
+	type FallbackProps,
+} from 'react-error-boundary'
+import { useMcpUiInit, navigateToLink } from '#app/utils/mcp.ts'
 import { type Route } from './+types/journal-viewer.tsx'
 
 export async function loader({ context }: Route.LoaderArgs) {
@@ -18,10 +24,11 @@ export default function JournalViewer({ loaderData }: Route.ComponentProps) {
 					<h1 className="text-foreground mb-2 text-3xl font-bold">
 						Your Journal
 					</h1>
-					<p className="text-muted-foreground">
+					<p className="text-muted-foreground mb-4">
 						You have {entries.length} journal{' '}
 						{entries.length === 1 ? 'entry' : 'entries'}
 					</p>
+					<XPostLink entryCount={entries.length} />
 				</div>
 
 				{entries.length === 0 ? (
@@ -74,5 +81,58 @@ export default function JournalViewer({ loaderData }: Route.ComponentProps) {
 				)}
 			</div>
 		</div>
+	)
+}
+
+function XPostLink({ entryCount }: { entryCount: number }) {
+	return (
+		<ErrorBoundary FallbackComponent={XPostLinkError}>
+			<XPostLinkImpl entryCount={entryCount} />
+		</ErrorBoundary>
+	)
+}
+
+function XPostLinkError({ error, resetErrorBoundary }: FallbackProps) {
+	return (
+		<div className="bg-destructive/10 border-destructive/20 text-destructive rounded-lg border p-3">
+			<p className="text-sm font-medium">Failed to post on X</p>
+			<p className="text-xs text-destructive/80">{error.message}</p>
+			<button
+				onClick={resetErrorBoundary}
+				className="mt-2 text-xs text-destructive hover:underline cursor-pointer"
+			>
+				Try again
+			</button>
+		</div>
+	)
+}
+
+function XPostLinkImpl({ entryCount }: { entryCount: number }) {
+	const [isPending, startTransition] = useTransition()
+	const { showBoundary } = useErrorBoundary()
+	const handlePostOnX = () => {
+		startTransition(async () => {
+			try {
+				const text = `I have ${entryCount} journal ${entryCount === 1 ? 'entry' : 'entries'} in my personal journal app! 📝✨`
+				const url = `https://x.com/intent/post?text=${encodeURIComponent(text)}`
+
+				await navigateToLink(url)
+			} catch (err) {
+				showBoundary(err)
+			}
+		})
+	}
+
+	return (
+		<button
+			onClick={handlePostOnX}
+			disabled={isPending}
+			className="bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center gap-2 cursor-pointer"
+		>
+			<svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+				<path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+			</svg>
+			{isPending ? 'Posting...' : 'Post'}
+		</button>
 	)
 }

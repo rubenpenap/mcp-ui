@@ -62,11 +62,11 @@ export function useFormSubmissionCapability() {
 	return canUseOnSubmit
 }
 
-export function callTool(
-	toolName: string,
-	params: any,
+function createMcpMessageHandler<T>(
+	type: string,
+	payload: Record<string, unknown>,
 	signal?: AbortSignal,
-): Promise<any> {
+): Promise<T> {
 	const messageId = crypto.randomUUID()
 
 	return new Promise((resolve, reject) => {
@@ -75,22 +75,10 @@ export function callTool(
 			return
 		}
 
-		// Send tool call with messageId
-		window.parent.postMessage(
-			{
-				type: 'tool',
-				messageId,
-				payload: {
-					toolName,
-					params,
-				},
-			},
-			'*',
-		)
+		window.parent.postMessage({ type, messageId, payload }, '*')
 
 		function handleMessage(event: MessageEvent) {
 			if (event.data.type === 'ui-message-response') {
-				console.log(event)
 				const {
 					messageId: responseMessageId,
 					payload: { response, error },
@@ -111,48 +99,24 @@ export function callTool(
 	})
 }
 
+export function callTool(
+	toolName: string,
+	params: any,
+	signal?: AbortSignal,
+): Promise<any> {
+	return createMcpMessageHandler('tool', { toolName, params }, signal)
+}
+
 export function sendPrompt(
 	prompt: string,
 	signal?: AbortSignal,
 ): Promise<void> {
-	const messageId = crypto.randomUUID()
+	return createMcpMessageHandler('prompt', { prompt }, signal)
+}
 
-	return new Promise((resolve, reject) => {
-		if (signal?.aborted) {
-			reject(new Error('Operation aborted'))
-			return
-		}
-
-		// Send prompt with messageId
-		window.parent.postMessage(
-			{
-				type: 'prompt',
-				messageId,
-				payload: {
-					prompt,
-				},
-			},
-			'*',
-		)
-
-		function handleMessage(event: MessageEvent) {
-			if (event.data.type === 'ui-message-response') {
-				const {
-					messageId: responseMessageId,
-					payload: { response, error },
-				} = event.data
-				if (responseMessageId === messageId) {
-					window.removeEventListener('message', handleMessage)
-
-					if (error) {
-						reject(new Error(error))
-					} else {
-						resolve(response)
-					}
-				}
-			}
-		}
-
-		window.addEventListener('message', handleMessage, { signal })
-	})
+export function navigateToLink(
+	url: string,
+	signal?: AbortSignal,
+): Promise<void> {
+	return createMcpMessageHandler('link', { url }, signal)
 }
