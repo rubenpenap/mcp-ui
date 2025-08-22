@@ -5,7 +5,7 @@ import {
 	type LoggingLevel,
 } from '@modelcontextprotocol/sdk/types.js'
 import { McpAgent } from 'agents/mcp'
-import { getClient } from './client.ts'
+import { db } from '../db.ts'
 import { initializePrompts } from './prompts.ts'
 import { initializeResources } from './resources.ts'
 import { initializeTools } from './tools.ts'
@@ -42,7 +42,7 @@ You can also help users add tags to their entries and get all tags for an entry.
 	)
 
 	async init() {
-		this.db = getClient()
+		this.db = db
 		this.server.server.setRequestHandler(
 			SetLevelRequestSchema,
 			async (request) => {
@@ -69,7 +69,7 @@ export default {
 		}
 
 		if (url.pathname === '/journal') {
-			const ui = await getJournalViewUI(getClient())
+			const ui = await getJournalViewUI(db)
 			return new Response(ui, {
 				headers: { 'Content-Type': 'text/html' },
 			})
