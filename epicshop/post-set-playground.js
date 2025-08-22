@@ -3,9 +3,10 @@
 import path from 'path'
 import fs from 'fs-extra'
 
-const playgroundDir =
-	process.argv[2] || process.env.PLAYGROUND_DIR || process.cwd()
-const wranglerPath = path.join(playgroundDir, 'wrangler.jsonc')
+const wranglerPath = path.join(
+	process.env.EPICSHOP_PLAYGROUND_DEST_DIR,
+	'wrangler.jsonc',
+)
 
 if (await fs.pathExists(wranglerPath)) {
 	try {
