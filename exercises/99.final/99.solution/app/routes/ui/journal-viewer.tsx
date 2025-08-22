@@ -113,10 +113,11 @@ function XPostLinkImpl({ entryCount }: { entryCount: number }) {
 	const handlePostOnX = () => {
 		startTransition(async () => {
 			try {
-				const text = `I have ${entryCount} journal ${entryCount === 1 ? 'entry' : 'entries'} in my personal journal app! 📝✨`
-				const url = `https://x.com/intent/post?text=${encodeURIComponent(text)}`
+				const text = `I have ${entryCount} journal ${entryCount === 1 ? 'entry' : 'entries'} in my EpicMe journal! 📝✨`
+				const url = new URL('https://x.com/intent/post')
+				url.searchParams.set('text', text)
 
-				await navigateToLink(url)
+				await navigateToLink(url.toString())
 			} catch (err) {
 				showBoundary(err)
 			}
