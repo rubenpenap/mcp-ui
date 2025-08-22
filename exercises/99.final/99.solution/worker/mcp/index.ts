@@ -9,7 +9,6 @@ import { db } from '../db.ts'
 import { initializePrompts } from './prompts.ts'
 import { initializeResources } from './resources.ts'
 import { initializeTools } from './tools.ts'
-import { getJournalViewUI } from './ui.ts'
 
 type Props = { baseUrl: string }
 type State = { loggingLevel: LoggingLevel }
@@ -66,13 +65,6 @@ export default {
 				binding: 'EPIC_ME_MCP_OBJECT',
 			})
 			return mcp.fetch(request, env, ctx)
-		}
-
-		if (url.pathname === '/journal') {
-			const ui = await getJournalViewUI(db)
-			return new Response(ui, {
-				headers: { 'Content-Type': 'text/html' },
-			})
 		}
 
 		return new Response('Not found', { status: 404 })
