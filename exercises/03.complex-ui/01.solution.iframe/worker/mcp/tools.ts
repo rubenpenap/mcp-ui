@@ -443,35 +443,6 @@ export async function initializeTools(agent: EpicMeMCP) {
 			}
 		},
 	)
-
-	agent.server.registerTool(
-		'view_entry',
-		{
-			title: 'View Entry',
-			description: 'View a journal entry by ID visually',
-			annotations: {
-				readOnlyHint: true,
-				openWorldHint: false,
-			},
-			inputSchema: entryIdSchema,
-		},
-		async ({ id }) => {
-			const iframeUrl = new URL('/ui/entry-viewer', agent.props.baseUrl)
-
-			return {
-				content: [
-					createUIResource({
-						uri: `ui://view-entry/${id}`,
-						content: {
-							type: 'externalUrl',
-							iframeUrl: iframeUrl.toString(),
-						},
-						encoding: 'text',
-					}),
-				],
-			}
-		},
-	)
 }
 
 function createText(text: unknown): CallToolResult['content'][number] {

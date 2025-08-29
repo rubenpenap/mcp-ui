@@ -5,13 +5,22 @@
   ],
   "references": [
     {
-      "path": "exercises/01.start/01.problem"
+      "path": "exercises/01.simple-ui/01.problem.raw-html"
     },
     {
-      "path": "exercises/05.middle/01.problem.without-rr"
+      "path": "exercises/01.simple-ui/01.solution.raw-html"
     },
     {
-      "path": "exercises/05.middle/09.solution.with-rr"
+      "path": "exercises/02.consistent-ui/01.problem.remote-dom"
+    },
+    {
+      "path": "exercises/02.consistent-ui/01.solution.remote-dom"
+    },
+    {
+      "path": "exercises/03.complex-ui/01.problem.iframe"
+    },
+    {
+      "path": "exercises/03.complex-ui/01.solution.iframe"
     },
     {
       "path": "exercises/99.final/99.solution"

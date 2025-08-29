@@ -18,7 +18,7 @@ import { type CallToolResult } from '@modelcontextprotocol/sdk/types.js'
 import { z } from 'zod'
 import { type EpicMeMCP } from './index.ts'
 import { suggestTagsSampling } from './sampling.ts'
-import { getTagViewUI } from './ui.ts'
+import { getTagRemoteDomUIScript } from './ui.ts'
 
 export async function initializeTools(agent: EpicMeMCP) {
 	agent.server.registerTool(
@@ -55,34 +55,6 @@ export async function initializeTools(agent: EpicMeMCP) {
 					),
 					createEntryResourceLink(createdEntry),
 					createText(structuredContent),
-				],
-			}
-		},
-	)
-
-	agent.server.registerTool(
-		'view_journal',
-		{
-			title: 'View Journal',
-			description: 'View the journal visually',
-			annotations: {
-				readOnlyHint: true,
-				openWorldHint: false,
-			},
-		},
-		async () => {
-			const iframeUrl = new URL('/ui/journal-viewer', agent.props.baseUrl)
-
-			return {
-				content: [
-					createUIResource({
-						uri: `ui://view-journal/${Date.now()}`,
-						content: {
-							type: 'externalUrl',
-							iframeUrl: iframeUrl.toString(),
-						},
-						encoding: 'text',
-					}),
 				],
 			}
 		},
@@ -270,8 +242,9 @@ export async function initializeTools(agent: EpicMeMCP) {
 					createUIResource({
 						uri: `ui://view-tag/${id}`,
 						content: {
-							type: 'rawHtml',
-							htmlString: await getTagViewUI(agent.db, id),
+							type: 'remoteDom',
+							framework: 'react',
+							script: await getTagRemoteDomUIScript(agent.db, id),
 						},
 						encoding: 'text',
 					}),
@@ -439,35 +412,6 @@ export async function initializeTools(agent: EpicMeMCP) {
 					createTagResourceLink(tag),
 					createEntryResourceLink(entry),
 					createText(structuredContent),
-				],
-			}
-		},
-	)
-
-	agent.server.registerTool(
-		'view_entry',
-		{
-			title: 'View Entry',
-			description: 'View a journal entry by ID visually',
-			annotations: {
-				readOnlyHint: true,
-				openWorldHint: false,
-			},
-			inputSchema: entryIdSchema,
-		},
-		async ({ id }) => {
-			const iframeUrl = new URL('/ui/entry-viewer', agent.props.baseUrl)
-
-			return {
-				content: [
-					createUIResource({
-						uri: `ui://view-entry/${id}`,
-						content: {
-							type: 'externalUrl',
-							iframeUrl: iframeUrl.toString(),
-						},
-						encoding: 'text',
-					}),
 				],
 			}
 		},
