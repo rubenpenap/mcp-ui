@@ -60,7 +60,9 @@ export default {
 		const url = new URL(request.url)
 
 		if (url.pathname === '/mcp') {
+			// can add this as request headers once https://github.com/cloudflare/agents/pull/426
 			ctx.props.baseUrl = url.origin
+
 			const mcp = EpicMeMCP.serve('/mcp', {
 				binding: 'EPIC_ME_MCP_OBJECT',
 			})
