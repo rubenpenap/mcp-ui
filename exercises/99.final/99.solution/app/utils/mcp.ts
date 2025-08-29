@@ -75,6 +75,16 @@ function createMcpMessageHandler<T extends unknown>(
 			return
 		}
 
+		if (!window.parent || window.parent === window) {
+			console.log(`[MCP] No parent frame available. Would have sent message:`, {
+				type,
+				messageId,
+				payload,
+			})
+			reject(new Error('No parent frame available'))
+			return
+		}
+
 		window.parent.postMessage({ type, messageId, payload }, '*')
 
 		function handleMessage(event: MessageEvent) {
@@ -104,7 +114,10 @@ export function callTool<ReturnType extends unknown>(
 	params: any,
 	signal?: AbortSignal,
 ): Promise<ReturnType> {
-	return createMcpMessageHandler('tool', { toolName, params }, signal)
+	// Temporarily send a prompt instead of tool message since MCP tool messages don't work in Goose yet
+	const prompt = `Please call the tool "${toolName}" with the following parameters: ${JSON.stringify(params, null, 2)}`
+	return createMcpMessageHandler('prompt', { prompt }, signal)
+	// return createMcpMessageHandler('tool', { toolName, params }, signal)
 }
 
 export function sendPrompt<ReturnType extends unknown>(

@@ -16,6 +16,11 @@ type Pages = {
   "/ui/journal-viewer": {
     params: {};
   };
+  "/ui/entry-viewer/:entryId": {
+    params: {
+      "entryId": string;
+    };
+  };
   "/*": {
     params: {
       "*": string;
@@ -26,7 +31,7 @@ type Pages = {
 type RouteFiles = {
   "root.tsx": {
     id: "root";
-    page: "/" | "/ui/journal-viewer" | "/*";
+    page: "/" | "/ui/journal-viewer" | "/ui/entry-viewer/:entryId" | "/*";
   };
   "routes/index.tsx": {
     id: "routes/index";
@@ -35,6 +40,10 @@ type RouteFiles = {
   "routes/ui/journal-viewer.tsx": {
     id: "routes/ui/journal-viewer";
     page: "/ui/journal-viewer";
+  };
+  "routes/ui/entry-viewer.tsx": {
+    id: "routes/ui/entry-viewer";
+    page: "/ui/entry-viewer/:entryId";
   };
   "routes/catch-all.tsx": {
     id: "routes/catch-all";

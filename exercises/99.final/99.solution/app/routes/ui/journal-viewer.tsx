@@ -29,7 +29,7 @@ export default function JournalViewer({ loaderData }: Route.ComponentProps) {
 	return (
 		<div className="bg-background max-h-[800px] overflow-y-auto p-4">
 			<div className="mx-auto max-w-4xl">
-				<div className="bg-card mb-6 rounded-xl p-6 shadow-lg">
+				<div className="bg-card border-border mb-6 rounded-xl border p-6 shadow-lg">
 					<h1 className="text-foreground mb-2 text-3xl font-bold">
 						Your Journal
 					</h1>
@@ -41,7 +41,7 @@ export default function JournalViewer({ loaderData }: Route.ComponentProps) {
 				</div>
 
 				{entries.length === 0 ? (
-					<div className="bg-card rounded-xl p-8 text-center shadow-lg">
+					<div className="bg-card border-border rounded-xl border p-8 text-center shadow-lg">
 						<div
 							className="mb-4 text-6xl"
 							role="img"
@@ -78,9 +78,7 @@ export default function JournalViewer({ loaderData }: Route.ComponentProps) {
 										</div>
 
 										<div className="mt-4 flex gap-2">
-											<button className="text-primary text-sm font-medium hover:underline">
-												View Details
-											</button>
+											<ViewEntryButton entry={entry} />
 											<SummarizeEntryButton entry={entry} />
 											<DeleteEntryButton entry={entry} />
 										</div>
@@ -210,6 +208,58 @@ function DeleteEntryButtonImpl({
 			})}
 		>
 			{isPending ? 'Deleting...' : doubleCheck ? `Confirm?` : 'Delete'}
+		</button>
+	)
+}
+
+function ViewEntryButton({ entry }: { entry: { id: number; title: string } }) {
+	return (
+		<ErrorBoundary FallbackComponent={ViewEntryError}>
+			<ViewEntryButtonImpl entry={entry} />
+		</ErrorBoundary>
+	)
+}
+
+function ViewEntryError({ error, resetErrorBoundary }: FallbackProps) {
+	return (
+		<div className="bg-destructive/10 border-destructive/20 text-destructive rounded-lg border p-3">
+			<p className="text-sm font-medium">Failed to view entry</p>
+			<p className="text-destructive/80 text-xs">{error.message}</p>
+			<button
+				onClick={resetErrorBoundary}
+				className="text-destructive mt-2 cursor-pointer text-xs hover:underline"
+			>
+				Try again
+			</button>
+		</div>
+	)
+}
+
+function ViewEntryButtonImpl({
+	entry,
+}: {
+	entry: { id: number; title: string }
+}) {
+	const [isPending, startTransition] = useTransition()
+	const { showBoundary } = useErrorBoundary()
+
+	const handleViewEntry = () => {
+		startTransition(async () => {
+			try {
+				await callTool('view_entry', { id: entry.id })
+			} catch (err) {
+				showBoundary(err)
+			}
+		})
+	}
+
+	return (
+		<button
+			onClick={handleViewEntry}
+			disabled={isPending}
+			className="text-primary text-sm font-medium hover:underline disabled:cursor-not-allowed disabled:opacity-50"
+		>
+			{isPending ? 'Loading...' : 'View Details'}
 		</button>
 	)
 }

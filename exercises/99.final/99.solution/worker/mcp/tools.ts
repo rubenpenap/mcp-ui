@@ -18,7 +18,7 @@ import { type CallToolResult } from '@modelcontextprotocol/sdk/types.js'
 import { z } from 'zod'
 import { type EpicMeMCP } from './index.ts'
 import { suggestTagsSampling } from './sampling.ts'
-import { getTagRemoteDomUIScript, getTagViewUI } from './ui.ts'
+import { getTagViewUI } from './ui.ts'
 
 export async function initializeTools(agent: EpicMeMCP) {
 	agent.server.registerTool(
@@ -437,6 +437,33 @@ export async function initializeTools(agent: EpicMeMCP) {
 					createTagResourceLink(tag),
 					createEntryResourceLink(entry),
 					createText(structuredContent),
+				],
+			}
+		},
+	)
+
+	agent.server.registerTool(
+		'view_entry',
+		{
+			title: 'View Entry',
+			description: 'View a journal entry by ID visually',
+			annotations: {
+				readOnlyHint: true,
+				openWorldHint: false,
+			},
+			inputSchema: entryIdSchema,
+		},
+		async ({ id }) => {
+			return {
+				content: [
+					createUIResource({
+						uri: `ui://view-entry/${id}`,
+						content: {
+							type: 'externalUrl',
+							iframeUrl: `${agent.props.baseUrl}/ui/entry-viewer/${id}`,
+						},
+						encoding: 'text',
+					}),
 				],
 			}
 		},
