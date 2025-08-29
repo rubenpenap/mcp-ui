@@ -29,7 +29,7 @@ export default function JournalViewer({ loaderData }: Route.ComponentProps) {
 	return (
 		<div className="bg-background max-h-[800px] overflow-y-auto p-4">
 			<div className="mx-auto max-w-4xl">
-				<div className="bg-card border-border mb-6 rounded-xl border p-6 shadow-lg">
+				<div className="bg-card mb-6 rounded-xl border p-6 shadow-lg">
 					<h1 className="text-foreground mb-2 text-3xl font-bold">
 						Your Journal
 					</h1>
@@ -41,7 +41,7 @@ export default function JournalViewer({ loaderData }: Route.ComponentProps) {
 				</div>
 
 				{entries.length === 0 ? (
-					<div className="bg-card border-border rounded-xl border p-8 text-center shadow-lg">
+					<div className="bg-card rounded-xl border p-8 text-center shadow-lg">
 						<div
 							className="mb-4 text-6xl"
 							role="img"
@@ -61,7 +61,7 @@ export default function JournalViewer({ loaderData }: Route.ComponentProps) {
 						{entries.map((entry) => (
 							<div
 								key={entry.id}
-								className="bg-card border-border rounded-xl border p-6 shadow-sm transition-all hover:shadow-md"
+								className="bg-card rounded-xl border p-6 shadow-sm transition-all hover:shadow-md"
 							>
 								<div className="flex items-start justify-between">
 									<div className="flex-1">

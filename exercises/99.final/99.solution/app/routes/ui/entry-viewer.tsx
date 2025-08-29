@@ -36,7 +36,7 @@ export default function EntryViewerContent({
 	return (
 		<div className="bg-background max-h-[800px] overflow-y-auto p-4">
 			<div className="mx-auto max-w-4xl">
-				<div className="bg-card border-border mb-6 rounded-xl border p-6 shadow-lg">
+				<div className="bg-card mb-6 rounded-xl border p-6 shadow-lg">
 					<div className="mb-4 flex items-center justify-between">
 						<h1 className="text-foreground text-3xl font-bold">
 							{entry.title}
@@ -100,7 +100,7 @@ export default function EntryViewerContent({
 					</div>
 				</div>
 
-				<div className="bg-card border-border rounded-xl border p-6 shadow-lg">
+				<div className="bg-card rounded-xl border p-6 shadow-lg">
 					<h2 className="text-foreground mb-4 text-xl font-semibold">
 						Content
 					</h2>

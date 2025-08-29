@@ -8,6 +8,12 @@
       "path": "exercises/01.start/01.problem"
     },
     {
+      "path": "exercises/05.middle/01.problem.without-rr"
+    },
+    {
+      "path": "exercises/05.middle/09.solution.with-rr"
+    },
+    {
       "path": "exercises/99.final/99.solution"
     }
   ]

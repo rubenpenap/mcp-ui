@@ -8,9 +8,9 @@ const requestHandler = createRequestHandler(
 )
 
 export default {
-	fetch: async (request: Request, env: Env, ctx: ExecutionContext) => {
+	fetch: async (request, env, ctx) => {
 		const url = new URL(request.url)
-		if (url.pathname.startsWith('/mcp')) {
+		if (url.pathname === '/mcp') {
 			ctx.props.baseUrl = url.origin
 			return EpicMeMCP.serve('/mcp', {
 				binding: 'EPIC_ME_MCP_OBJECT',
@@ -22,6 +22,6 @@ export default {
 			cloudflare: { env, ctx },
 		})
 	},
-}
+} satisfies ExportedHandler<Env>
 
 export { EpicMeMCP }
