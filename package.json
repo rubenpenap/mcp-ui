@@ -5,7 +5,7 @@
     "title": "MCP UI 🪟",
     "subtitle": "Go beyond text interaction in AI Chat",
     "sidecarProcesses": {
-      "EpicMeApp": "npm run dev --prefix ./epicshop/epic-me -- --clearScreen=false --logLevel=error --strictPort"
+      "EpicMeApp": "npm run dev --silent --prefix ./epicshop/epic-me -- --clearScreen=false --logLevel=error --strictPort"
     },
     "githubRepo": "https://github.com/epicweb-dev/mcp-ui",
     "subdomain": "mcp-ui",
