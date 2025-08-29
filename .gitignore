@@ -15,4 +15,4 @@ data.db
 # .env
 dist
 .wrangler
-
+**/.react-router/**
