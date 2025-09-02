@@ -82,6 +82,9 @@ export async function initializeTools(agent: EpicMeMCP) {
 							iframeUrl: iframeUrl.toString(),
 						},
 						encoding: 'text',
+						uiMetadata: {
+							'preferred-frame-size': ['800px', '600px'],
+						},
 					}),
 				],
 			}

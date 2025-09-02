@@ -23,6 +23,24 @@
       "path": "exercises/03.complex-ui/01.solution.iframe"
     },
     {
+      "path": "exercises/03.complex-ui/02.problem.ready"
+    },
+    {
+      "path": "exercises/03.complex-ui/02.solution.ready"
+    },
+    {
+      "path": "exercises/03.complex-ui/03.problem.sizing"
+    },
+    {
+      "path": "exercises/03.complex-ui/03.solution.sizing"
+    },
+    {
+      "path": "exercises/03.complex-ui/04.problem.dynamic-sizing"
+    },
+    {
+      "path": "exercises/03.complex-ui/04.solution.dynamic-sizing"
+    },
+    {
       "path": "exercises/99.final/99.solution"
     }
   ]

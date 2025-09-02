@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 
 export function useMcpUiInit() {
 	useEffect(() => {
@@ -18,48 +18,12 @@ export function notifyParentOfCurrentDocumentSize() {
 		{
 			type: 'ui-size-change',
 			payload: {
-				height: height + 2,
+				height: height,
 				width: width,
 			},
 		},
 		'*',
 	)
-}
-
-function willSubmitEventFire() {
-	const form = document.createElement('form')
-	form.noValidate = true
-	form.style.display = 'none'
-	document.body.appendChild(form)
-
-	let fired = false
-	form.addEventListener(
-		'submit',
-		(e) => {
-			fired = true
-			e.preventDefault()
-		},
-		{ capture: true, once: true },
-	)
-
-	try {
-		form.requestSubmit() // fires 'submit' synchronously if allowed
-	} finally {
-		form.remove()
-	}
-
-	return fired // true => submit event dispatched (forms allowed)
-}
-
-export function useFormSubmissionCapability() {
-	const [canUseOnSubmit, setCanUseOnSubmit] = useState(false)
-
-	useEffect(() => {
-		const canSubmit = willSubmitEventFire()
-		setCanUseOnSubmit(canSubmit)
-	}, [])
-
-	return canUseOnSubmit
 }
 
 function createMcpMessageHandler<T extends unknown>(

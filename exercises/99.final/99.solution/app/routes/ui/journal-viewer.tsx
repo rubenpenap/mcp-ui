@@ -1,12 +1,9 @@
-import { invariant } from '@epic-web/invariant'
 import { useTransition } from 'react'
 import {
 	ErrorBoundary,
 	useErrorBoundary,
 	type FallbackProps,
 } from 'react-error-boundary'
-import { useRevalidator } from 'react-router'
-import { z } from 'zod'
 import {
 	useMcpUiInit,
 	navigateToLink,
@@ -182,13 +179,12 @@ function DeleteEntryButtonImpl({
 	const [isPending, startTransition] = useTransition()
 	const { doubleCheck, getButtonProps } = useDoubleCheck()
 	const { showBoundary } = useErrorBoundary()
-	const revalidator = useRevalidator()
 
 	const handleDelete = () => {
 		startTransition(async () => {
 			try {
+				// TODO: get the result and show a success message if the deletion was successful
 				await callTool('delete_entry', { id: entry.id })
-				await revalidator.revalidate()
 			} catch (err) {
 				showBoundary(err)
 			}
@@ -302,34 +298,7 @@ function SummarizeEntryButtonImpl({
 	const handleSummarize = () => {
 		startTransition(async () => {
 			try {
-				// Get the full entry content first
-				const fullEntry = await callTool('get_entry', { id: entry.id })
-				console.log({ fullEntry })
-				invariant(fullEntry, 'Failed to retrieve entry content')
-				const entrySchema = z.object({
-					title: z.string(),
-					content: z.string(),
-					mood: z.string().optional(),
-					location: z.string().optional(),
-					weather: z.string().optional(),
-					tags: z
-						.array(z.object({ id: z.number(), name: z.string() }))
-						.optional(),
-				})
-				const parsedEntry = entrySchema.parse(fullEntry)
-
-				// Create a prompt requesting a summary
-				const prompt = `Please provide a concise summary of this journal entry:
-
-Title: ${parsedEntry.title}
-Content: ${parsedEntry.content}
-Mood: ${parsedEntry.mood || 'Not specified'}
-Location: ${parsedEntry.location || 'Not specified'}
-Weather: ${parsedEntry.weather || 'Not specified'}
-Tags: ${parsedEntry.tags?.map((t: { name: string }) => t.name).join(', ') || 'None'}
-
-Please provide a brief, insightful summary of this entry.`
-
+				const prompt = `Please use the EpicMe get_entry tool to get entry ${entry.id} and provide a concise and insightful summary of it.`
 				await sendPrompt(prompt)
 			} catch (err) {
 				showBoundary(err)
