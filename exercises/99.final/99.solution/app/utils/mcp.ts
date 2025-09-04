@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { type z } from 'zod'
 
 export function useMcpUiInit() {
 	useEffect(() => {
@@ -15,27 +16,57 @@ export function notifyParentOfCurrentDocumentSize() {
 	const width = document.documentElement.scrollWidth
 
 	window.parent.postMessage(
-		{
-			type: 'ui-size-change',
-			payload: {
-				height: height,
-				width: width,
-			},
-		},
+		{ type: 'ui-size-change', payload: { height, width } },
 		'*',
 	)
 }
 
-function createMcpMessageHandler<T extends unknown>(
-	type: string,
-	payload: Record<string, unknown>,
-	signal?: AbortSignal,
-): Promise<T> {
+type MessageOptions = {
+	schema?: z.ZodSchema
+	signal?: AbortSignal
+}
+
+type McpMessageReturnType<Options> = Promise<
+	Options extends { schema: z.ZodSchema } ? z.infer<Options['schema']> : unknown
+>
+
+type McpMessageTypes = {
+	tool: { toolName: string; params: Record<string, unknown> }
+	prompt: { prompt: string }
+	link: { url: string }
+}
+
+type McpMessageType = keyof McpMessageTypes
+
+function sendMcpMessage<Options extends MessageOptions>(
+	type: 'tool',
+	payload: McpMessageTypes['tool'],
+	options?: Options,
+): McpMessageReturnType<Options>
+
+function sendMcpMessage<Options extends MessageOptions>(
+	type: 'prompt',
+	payload: McpMessageTypes['prompt'],
+	options?: Options,
+): McpMessageReturnType<Options>
+
+function sendMcpMessage<Options extends MessageOptions>(
+	type: 'link',
+	payload: McpMessageTypes['link'],
+	options?: Options,
+): McpMessageReturnType<Options>
+
+function sendMcpMessage(
+	type: McpMessageType,
+	payload: McpMessageTypes[McpMessageType],
+	options: MessageOptions = {},
+): McpMessageReturnType<typeof options> {
+	const { signal, schema } = options
 	const messageId = crypto.randomUUID()
 
 	return new Promise((resolve, reject) => {
 		if (signal?.aborted) {
-			reject(new Error('Operation aborted'))
+			reject(new Error('Operation aborted before it began'))
 			return
 		}
 
@@ -60,11 +91,15 @@ function createMcpMessageHandler<T extends unknown>(
 				if (responseMessageId === messageId) {
 					window.removeEventListener('message', handleMessage)
 
-					if (error) {
-						reject(new Error(error))
-					} else {
-						resolve(response)
+					if (error) return reject(new Error(error))
+
+					if (!schema) return resolve(response)
+
+					const parseResult = schema.safeParse(response)
+					if (!parseResult.success) {
+						return reject(new Error(parseResult.error.message))
 					}
+					return resolve(parseResult.data)
 				}
 			}
 		}
@@ -73,27 +108,4 @@ function createMcpMessageHandler<T extends unknown>(
 	})
 }
 
-export function callTool<ReturnType extends unknown>(
-	toolName: string,
-	params: any,
-	signal?: AbortSignal,
-): Promise<ReturnType> {
-	// Temporarily send a prompt instead of tool message since MCP tool messages don't work in Goose yet
-	const prompt = `Please call the tool "${toolName}" with the following parameters: ${JSON.stringify(params, null, 2)}`
-	return createMcpMessageHandler('prompt', { prompt }, signal)
-	// return createMcpMessageHandler('tool', { toolName, params }, signal)
-}
-
-export function sendPrompt<ReturnType extends unknown>(
-	prompt: string,
-	signal?: AbortSignal,
-): Promise<ReturnType> {
-	return createMcpMessageHandler('prompt', { prompt }, signal)
-}
-
-export function navigateToLink<ReturnType extends unknown>(
-	url: string,
-	signal?: AbortSignal,
-): Promise<ReturnType> {
-	return createMcpMessageHandler('link', { url }, signal)
-}
+export { sendMcpMessage }

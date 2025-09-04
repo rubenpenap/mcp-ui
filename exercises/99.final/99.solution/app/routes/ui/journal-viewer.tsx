@@ -1,16 +1,12 @@
-import { useTransition } from 'react'
+import { useState, useTransition } from 'react'
 import {
 	ErrorBoundary,
 	useErrorBoundary,
 	type FallbackProps,
 } from 'react-error-boundary'
-import {
-	useMcpUiInit,
-	navigateToLink,
-	callTool,
-	sendPrompt,
-} from '#app/utils/mcp.ts'
-import { useDoubleCheck } from '#app/utils/misc.ts'
+import { z } from 'zod'
+import { useMcpUiInit, sendMcpMessage } from '#app/utils/mcp.ts'
+import { useDoubleCheck, useUnmountSignal } from '#app/utils/misc.ts'
 import { type Route } from './+types/journal-viewer.tsx'
 
 export async function loader({ context }: Route.LoaderArgs) {
@@ -20,8 +16,15 @@ export async function loader({ context }: Route.LoaderArgs) {
 
 export default function JournalViewer({ loaderData }: Route.ComponentProps) {
 	const { entries } = loaderData
+	const [deletedEntryIds, setDeletedEntryIds] = useState<Set<number>>(
+		() => new Set([]),
+	)
 
 	useMcpUiInit()
+
+	const handleEntryDeleted = (entryId: number) => {
+		setDeletedEntryIds((prev) => new Set([...prev, entryId]))
+	}
 
 	return (
 		<div className="bg-background max-h-[800px] overflow-y-auto p-4">
@@ -55,34 +58,64 @@ export default function JournalViewer({ loaderData }: Route.ComponentProps) {
 					</div>
 				) : (
 					<div className="space-y-4">
-						{entries.map((entry) => (
-							<div
-								key={entry.id}
-								className="bg-card rounded-xl border p-6 shadow-sm transition-all hover:shadow-md"
-							>
-								<div className="flex items-start justify-between">
-									<div className="flex-1">
-										<div className="mb-3 flex items-center gap-3">
-											<h3 className="text-foreground text-lg font-semibold">
-												{entry.title}
-											</h3>
-										</div>
+						{entries.map((entry) => {
+							const isDeleted = deletedEntryIds.has(entry.id)
+							return (
+								<div
+									key={entry.id}
+									className={`bg-card rounded-xl border p-6 shadow-sm transition-all ${
+										isDeleted ? 'bg-muted/50 opacity-50' : 'hover:shadow-md'
+									}`}
+								>
+									<div className="flex items-start justify-between">
+										<div className="flex-1">
+											<div className="mb-3 flex items-center gap-3">
+												<h3 className="text-foreground text-lg font-semibold">
+													{entry.title}
+												</h3>
+												{isDeleted ? (
+													<div className="text-accent-foreground bg-accent flex items-center gap-2 rounded-md px-2 py-1 text-sm">
+														<svg
+															className="h-3 w-3"
+															fill="none"
+															stroke="currentColor"
+															viewBox="0 0 24 24"
+															xmlns="http://www.w3.org/2000/svg"
+														>
+															<path
+																strokeLinecap="round"
+																strokeLinejoin="round"
+																strokeWidth={2}
+																d="M5 13l4 4L19 7"
+															/>
+														</svg>
+														Deleted
+													</div>
+												) : null}
+											</div>
 
-										<div className="mb-3 flex flex-wrap gap-2">
-											<span className="bg-accent text-accent-foreground rounded-full px-3 py-1 text-sm">
-												🏷️ {entry.tagCount} tag{entry.tagCount !== 1 ? 's' : ''}
-											</span>
-										</div>
+											<div className="mb-3 flex flex-wrap gap-2">
+												<span className="bg-accent text-accent-foreground rounded-full px-3 py-1 text-sm">
+													🏷️ {entry.tagCount} tag
+													{entry.tagCount !== 1 ? 's' : ''}
+												</span>
+											</div>
 
-										<div className="mt-4 flex gap-2">
-											<ViewEntryButton entry={entry} />
-											<SummarizeEntryButton entry={entry} />
-											<DeleteEntryButton entry={entry} />
+											{!isDeleted ? (
+												<div className="mt-4 flex gap-2">
+													<ViewEntryButton entry={entry} />
+													<SummarizeEntryButton entry={entry} />
+													<DeleteEntryButton
+														entry={entry}
+														onDeleted={() => handleEntryDeleted(entry.id)}
+													/>
+												</div>
+											) : null}
 										</div>
 									</div>
 								</div>
-							</div>
-						))}
+							)
+						})}
 					</div>
 				)}
 			</div>
@@ -116,6 +149,7 @@ function XPostLinkError({ error, resetErrorBoundary }: FallbackProps) {
 function XPostLinkImpl({ entryCount }: { entryCount: number }) {
 	const [isPending, startTransition] = useTransition()
 	const { showBoundary } = useErrorBoundary()
+	const unmountSignal = useUnmountSignal()
 	const handlePostOnX = () => {
 		startTransition(async () => {
 			try {
@@ -123,7 +157,11 @@ function XPostLinkImpl({ entryCount }: { entryCount: number }) {
 				const url = new URL('https://x.com/intent/post')
 				url.searchParams.set('text', text)
 
-				await navigateToLink(url.toString())
+				await sendMcpMessage(
+					'link',
+					{ url: url.toString() },
+					{ signal: unmountSignal },
+				)
 			} catch (err) {
 				showBoundary(err)
 			}
@@ -146,12 +184,14 @@ function XPostLinkImpl({ entryCount }: { entryCount: number }) {
 
 function DeleteEntryButton({
 	entry,
+	onDeleted,
 }: {
 	entry: { id: number; title: string }
+	onDeleted: () => void
 }) {
 	return (
 		<ErrorBoundary FallbackComponent={DeleteEntryError}>
-			<DeleteEntryButtonImpl entry={entry} />
+			<DeleteEntryButtonImpl entry={entry} onDeleted={onDeleted} />
 		</ErrorBoundary>
 	)
 }
@@ -171,20 +211,33 @@ function DeleteEntryError({ error, resetErrorBoundary }: FallbackProps) {
 	)
 }
 
+const deleteEntrySchema = z.object({
+	structuredContent: z.object({ success: z.boolean() }),
+})
+
 function DeleteEntryButtonImpl({
 	entry,
+	onDeleted,
 }: {
 	entry: { id: number; title: string }
+	onDeleted: () => void
 }) {
 	const [isPending, startTransition] = useTransition()
+	const unmountSignal = useUnmountSignal()
 	const { doubleCheck, getButtonProps } = useDoubleCheck()
 	const { showBoundary } = useErrorBoundary()
 
 	const handleDelete = () => {
 		startTransition(async () => {
 			try {
-				// TODO: get the result and show a success message if the deletion was successful
-				await callTool('delete_entry', { id: entry.id })
+				const result = await sendMcpMessage(
+					'tool',
+					{ toolName: 'delete_entry', params: { id: entry.id } },
+					{ schema: deleteEntrySchema, signal: unmountSignal },
+				)
+				if (result.structuredContent.success) {
+					onDeleted()
+				}
 			} catch (err) {
 				showBoundary(err)
 			}
@@ -238,11 +291,16 @@ function ViewEntryButtonImpl({
 }) {
 	const [isPending, startTransition] = useTransition()
 	const { showBoundary } = useErrorBoundary()
+	const unmountSignal = useUnmountSignal()
 
 	const handleViewEntry = () => {
 		startTransition(async () => {
 			try {
-				await callTool('view_entry', { id: entry.id })
+				await sendMcpMessage(
+					'tool',
+					{ toolName: 'view_entry', params: { id: entry.id } },
+					{ signal: unmountSignal },
+				)
 			} catch (err) {
 				showBoundary(err)
 			}
@@ -294,12 +352,13 @@ function SummarizeEntryButtonImpl({
 }) {
 	const [isPending, startTransition] = useTransition()
 	const { showBoundary } = useErrorBoundary()
+	const unmountSignal = useUnmountSignal()
 
 	const handleSummarize = () => {
 		startTransition(async () => {
 			try {
 				const prompt = `Please use the EpicMe get_entry tool to get entry ${entry.id} and provide a concise and insightful summary of it.`
-				await sendPrompt(prompt)
+				await sendMcpMessage('prompt', { prompt }, { signal: unmountSignal })
 			} catch (err) {
 				showBoundary(err)
 			}

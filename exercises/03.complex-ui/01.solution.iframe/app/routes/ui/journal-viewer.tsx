@@ -1,4 +1,4 @@
-import { useTransition } from 'react'
+import { useState, useTransition } from 'react'
 import {
 	ErrorBoundary,
 	useErrorBoundary,
@@ -14,6 +14,13 @@ export async function loader({ context }: Route.LoaderArgs) {
 
 export default function JournalViewer({ loaderData }: Route.ComponentProps) {
 	const { entries } = loaderData
+	const [deletedEntryIds, setDeletedEntryIds] = useState<Set<number>>(
+		() => new Set([]),
+	)
+
+	const handleEntryDeleted = (entryId: number) => {
+		setDeletedEntryIds((prev) => new Set([...prev, entryId]))
+	}
 
 	return (
 		<div className="bg-background max-h-[800px] overflow-y-auto p-4">
@@ -47,34 +54,64 @@ export default function JournalViewer({ loaderData }: Route.ComponentProps) {
 					</div>
 				) : (
 					<div className="space-y-4">
-						{entries.map((entry) => (
-							<div
-								key={entry.id}
-								className="bg-card rounded-xl border p-6 shadow-sm transition-all hover:shadow-md"
-							>
-								<div className="flex items-start justify-between">
-									<div className="flex-1">
-										<div className="mb-3 flex items-center gap-3">
-											<h3 className="text-foreground text-lg font-semibold">
-												{entry.title}
-											</h3>
-										</div>
+						{entries.map((entry) => {
+							const isDeleted = deletedEntryIds.has(entry.id)
+							return (
+								<div
+									key={entry.id}
+									className={`bg-card rounded-xl border p-6 shadow-sm transition-all ${
+										isDeleted ? 'bg-muted/50 opacity-50' : 'hover:shadow-md'
+									}`}
+								>
+									<div className="flex items-start justify-between">
+										<div className="flex-1">
+											<div className="mb-3 flex items-center gap-3">
+												<h3 className="text-foreground text-lg font-semibold">
+													{entry.title}
+												</h3>
+												{isDeleted ? (
+													<div className="text-accent-foreground bg-accent flex items-center gap-2 rounded-md px-2 py-1 text-sm">
+														<svg
+															className="h-3 w-3"
+															fill="none"
+															stroke="currentColor"
+															viewBox="0 0 24 24"
+															xmlns="http://www.w3.org/2000/svg"
+														>
+															<path
+																strokeLinecap="round"
+																strokeLinejoin="round"
+																strokeWidth={2}
+																d="M5 13l4 4L19 7"
+															/>
+														</svg>
+														Deleted
+													</div>
+												) : null}
+											</div>
 
-										<div className="mb-3 flex flex-wrap gap-2">
-											<span className="bg-accent text-accent-foreground rounded-full px-3 py-1 text-sm">
-												🏷️ {entry.tagCount} tag{entry.tagCount !== 1 ? 's' : ''}
-											</span>
-										</div>
+											<div className="mb-3 flex flex-wrap gap-2">
+												<span className="bg-accent text-accent-foreground rounded-full px-3 py-1 text-sm">
+													🏷️ {entry.tagCount} tag
+													{entry.tagCount !== 1 ? 's' : ''}
+												</span>
+											</div>
 
-										<div className="mt-4 flex gap-2">
-											<ViewEntryButton entry={entry} />
-											<SummarizeEntryButton entry={entry} />
-											<DeleteEntryButton entry={entry} />
+											{!isDeleted ? (
+												<div className="mt-4 flex gap-2">
+													<ViewEntryButton entry={entry} />
+													<SummarizeEntryButton entry={entry} />
+													<DeleteEntryButton
+														entry={entry}
+														onDeleted={() => handleEntryDeleted(entry.id)}
+													/>
+												</div>
+											) : null}
 										</div>
 									</div>
 								</div>
-							</div>
-						))}
+							)
+						})}
 					</div>
 				)}
 			</div>
@@ -138,12 +175,14 @@ function XPostLinkImpl({ entryCount }: { entryCount: number }) {
 
 function DeleteEntryButton({
 	entry,
+	onDeleted,
 }: {
 	entry: { id: number; title: string }
+	onDeleted: () => void
 }) {
 	return (
 		<ErrorBoundary FallbackComponent={DeleteEntryError}>
-			<DeleteEntryButtonImpl entry={entry} />
+			<DeleteEntryButtonImpl entry={entry} onDeleted={onDeleted} />
 		</ErrorBoundary>
 	)
 }
@@ -165,8 +204,10 @@ function DeleteEntryError({ error, resetErrorBoundary }: FallbackProps) {
 
 function DeleteEntryButtonImpl({
 	entry,
+	onDeleted,
 }: {
 	entry: { id: number; title: string }
+	onDeleted: () => void
 }) {
 	const [isPending, startTransition] = useTransition()
 	const { doubleCheck, getButtonProps } = useDoubleCheck()
