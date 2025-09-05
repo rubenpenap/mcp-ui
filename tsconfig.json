@@ -44,16 +44,25 @@
       "path": "exercises/04.interactive-ui/01.problem.links"
     },
     {
-      "path": "exercises/04.interactive-ui/02.solution.links"
+      "path": "exercises/04.interactive-ui/01.solution.links"
     },
     {
-      "path": "exercises/04.interactive-ui/03.problem.tools"
+      "path": "exercises/04.interactive-ui/02.problem.tools"
     },
     {
-      "path": "exercises/04.interactive-ui/03.solution.tools"
+      "path": "exercises/04.interactive-ui/02.solution.tools"
     },
     {
-      "path": "exercises/99.final/99.solution"
+      "path": "exercises/04.interactive-ui/03.problem.tool-results"
+    },
+    {
+      "path": "exercises/04.interactive-ui/03.solution.tool-results"
+    },
+    {
+      "path": "exercises/04.interactive-ui/04.problem.prompts"
+    },
+    {
+      "path": "exercises/04.interactive-ui/04.solution.prompts"
     }
   ]
 }
