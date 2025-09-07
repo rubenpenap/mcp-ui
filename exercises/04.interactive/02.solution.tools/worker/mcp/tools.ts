@@ -459,7 +459,7 @@ export async function initializeTools(agent: EpicMeMCP) {
 			inputSchema: entryIdSchema,
 		},
 		async ({ id }) => {
-			const iframeUrl = new URL('/ui/entry-viewer', agent.props.baseUrl)
+			const iframeUrl = new URL('/ui/entry-viewer/${id}', agent.props.baseUrl)
 
 			return {
 				content: [

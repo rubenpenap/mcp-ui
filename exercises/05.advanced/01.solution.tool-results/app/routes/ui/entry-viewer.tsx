@@ -7,7 +7,7 @@ import {
 } from 'react-error-boundary'
 import { z } from 'zod'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
-import { useMcpUiInit, sendMcpMessage } from '#app/utils/mcp.client.ts'
+import { useMcpUiInit, sendMcpMessage } from '#app/utils/mcp.ts'
 import { useDoubleCheck, useUnmountSignal } from '#app/utils/misc.ts'
 import { type Route } from './+types/entry-viewer.tsx'
 

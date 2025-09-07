@@ -4,7 +4,7 @@ import {
 	useErrorBoundary,
 	type FallbackProps,
 } from 'react-error-boundary'
-import { useMcpUiInit, sendLinkMcpMessage } from '#app/utils/mcp.client.ts'
+import { useMcpUiInit, sendLinkMcpMessage } from '#app/utils/mcp.ts'
 import { useDoubleCheck, useUnmountSignal } from '#app/utils/misc.ts'
 import { type Route } from './+types/journal-viewer.tsx'
 
