@@ -53,16 +53,22 @@
       "path": "exercises/04.interactive/02.solution.tools"
     },
     {
-      "path": "exercises/04.interactive/03.problem.tool-results"
+      "path": "exercises/04.interactive/03.problem.prompts"
     },
     {
-      "path": "exercises/04.interactive/03.solution.tool-results"
+      "path": "exercises/04.interactive/03.solution.prompts"
     },
     {
-      "path": "exercises/04.interactive/04.problem.prompts"
+      "path": "exercises/05.advanced/01.problem.tool-results"
     },
     {
-      "path": "exercises/04.interactive/04.solution.prompts"
+      "path": "exercises/05.advanced/01.solution.tool-results"
+    },
+    {
+      "path": "exercises/05.advanced/02.problem.render-data"
+    },
+    {
+      "path": "exercises/05.advanced/02.solution.render-data"
     }
   ]
 }

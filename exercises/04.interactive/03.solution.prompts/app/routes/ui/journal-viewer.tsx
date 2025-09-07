@@ -4,7 +4,7 @@ import {
 	useErrorBoundary,
 	type FallbackProps,
 } from 'react-error-boundary'
-import { useMcpUiInit, sendLinkMcpMessage } from '#app/utils/mcp.client.ts'
+import { useMcpUiInit, sendMcpMessage } from '#app/utils/mcp.client.ts'
 import { useDoubleCheck, useUnmountSignal } from '#app/utils/misc.ts'
 import { type Route } from './+types/journal-viewer.tsx'
 
@@ -148,6 +148,7 @@ function XPostLinkError({ error, resetErrorBoundary }: FallbackProps) {
 function XPostLinkImpl({ entryCount }: { entryCount: number }) {
 	const [isPending, startTransition] = useTransition()
 	const { showBoundary } = useErrorBoundary()
+	const unmountSignal = useUnmountSignal()
 	const handlePostOnX = () => {
 		startTransition(async () => {
 			try {
@@ -155,7 +156,11 @@ function XPostLinkImpl({ entryCount }: { entryCount: number }) {
 				const url = new URL('https://x.com/intent/post')
 				url.searchParams.set('text', text)
 
-				await sendLinkMcpMessage(url.toString())
+				await sendMcpMessage(
+					'link',
+					{ url: url.toString() },
+					{ signal: unmountSignal },
+				)
 			} catch (err) {
 				showBoundary(err)
 			}
@@ -273,11 +278,16 @@ function ViewEntryButtonImpl({
 }) {
 	const [isPending, startTransition] = useTransition()
 	const { showBoundary } = useErrorBoundary()
+	const unmountSignal = useUnmountSignal()
 
 	const handleViewEntry = () => {
 		startTransition(async () => {
 			try {
-				throw new Error('Calling tools is not yet supported')
+				await sendMcpMessage(
+					'tool',
+					{ toolName: 'view_entry', params: { id: entry.id } },
+					{ signal: unmountSignal },
+				)
 			} catch (err) {
 				showBoundary(err)
 			}
@@ -329,12 +339,13 @@ function SummarizeEntryButtonImpl({
 }) {
 	const [isPending, startTransition] = useTransition()
 	const { showBoundary } = useErrorBoundary()
+	const unmountSignal = useUnmountSignal()
 
 	const handleSummarize = () => {
 		startTransition(async () => {
 			try {
-				// Get the full entry content first
-				throw new Error('Sending prompts is not yet supported')
+				const prompt = `Please use the EpicMe get_entry tool to get entry ${entry.id} and provide a concise and insightful summary of it.`
+				await sendMcpMessage('prompt', { prompt }, { signal: unmountSignal })
 			} catch (err) {
 				showBoundary(err)
 			}
