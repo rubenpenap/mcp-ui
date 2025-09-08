@@ -29,7 +29,7 @@ export async function initializeTools(agent: EpicMeMCP) {
 			annotations: {
 				destructiveHint: false,
 				openWorldHint: false,
-			},
+			} satisfies ToolAnnotations,
 			inputSchema: createEntryInputSchema,
 			outputSchema: { entry: entryWithTagsSchema },
 		},
@@ -68,7 +68,7 @@ export async function initializeTools(agent: EpicMeMCP) {
 			annotations: {
 				readOnlyHint: true,
 				openWorldHint: false,
-			},
+			} satisfies ToolAnnotations,
 			inputSchema: entryIdSchema,
 			outputSchema: { entry: entryWithTagsSchema },
 		},
@@ -94,7 +94,7 @@ export async function initializeTools(agent: EpicMeMCP) {
 			annotations: {
 				readOnlyHint: true,
 				openWorldHint: false,
-			},
+			} satisfies ToolAnnotations,
 			outputSchema: {
 				entries: z.array(entryListItemSchema),
 			},
@@ -124,7 +124,7 @@ export async function initializeTools(agent: EpicMeMCP) {
 				destructiveHint: false,
 				idempotentHint: true,
 				openWorldHint: false,
-			},
+			} satisfies ToolAnnotations,
 			inputSchema: updateEntryInputSchema,
 			outputSchema: { entry: entryWithTagsSchema },
 		},
@@ -154,7 +154,7 @@ export async function initializeTools(agent: EpicMeMCP) {
 			annotations: {
 				idempotentHint: true,
 				openWorldHint: false,
-			},
+			} satisfies ToolAnnotations,
 			inputSchema: entryIdSchema,
 			outputSchema: { success: z.boolean(), entry: entryWithTagsSchema },
 		},
@@ -205,7 +205,7 @@ export async function initializeTools(agent: EpicMeMCP) {
 			annotations: {
 				destructiveHint: false,
 				openWorldHint: false,
-			},
+			} satisfies ToolAnnotations,
 			inputSchema: createTagInputSchema,
 			outputSchema: { tag: tagSchema },
 		},
@@ -233,7 +233,7 @@ export async function initializeTools(agent: EpicMeMCP) {
 			annotations: {
 				readOnlyHint: true,
 				openWorldHint: false,
-			},
+			} satisfies ToolAnnotations,
 			inputSchema: tagIdSchema,
 		},
 		async ({ id }) => {
@@ -260,7 +260,7 @@ export async function initializeTools(agent: EpicMeMCP) {
 			annotations: {
 				readOnlyHint: true,
 				openWorldHint: false,
-			},
+			} satisfies ToolAnnotations,
 			inputSchema: tagIdSchema,
 			outputSchema: { tag: tagSchema },
 		},
@@ -283,7 +283,7 @@ export async function initializeTools(agent: EpicMeMCP) {
 			annotations: {
 				readOnlyHint: true,
 				openWorldHint: false,
-			},
+			} satisfies ToolAnnotations,
 			outputSchema: { tags: z.array(tagListItemSchema) },
 		},
 		async () => {
@@ -310,7 +310,7 @@ export async function initializeTools(agent: EpicMeMCP) {
 				destructiveHint: false,
 				idempotentHint: true,
 				openWorldHint: false,
-			},
+			} satisfies ToolAnnotations,
 			inputSchema: updateTagInputSchema,
 			outputSchema: { tag: tagSchema },
 		},
@@ -338,7 +338,7 @@ export async function initializeTools(agent: EpicMeMCP) {
 			annotations: {
 				idempotentHint: true,
 				openWorldHint: false,
-			},
+			} satisfies ToolAnnotations,
 			inputSchema: tagIdSchema,
 			outputSchema: { success: z.boolean(), tag: tagSchema },
 		},
@@ -388,7 +388,7 @@ export async function initializeTools(agent: EpicMeMCP) {
 				destructiveHint: false,
 				idempotentHint: true,
 				openWorldHint: false,
-			},
+			} satisfies ToolAnnotations,
 			inputSchema: entryTagIdSchema,
 			outputSchema: { success: z.boolean(), entryTag: entryTagSchema },
 		},
@@ -416,6 +416,20 @@ export async function initializeTools(agent: EpicMeMCP) {
 		},
 	)
 }
+
+type ToolAnnotations = {
+	// defaults to true, so only allow false
+	openWorldHint?: false
+} & (
+	| {
+			// when readOnlyHint is true, none of the other annotations can be changed
+			readOnlyHint: true
+	  }
+	| {
+			destructiveHint?: false // Only allow false (default is true)
+			idempotentHint?: true // Only allow true (default is false)
+	  }
+)
 
 function createText(text: unknown): CallToolResult['content'][number] {
 	if (typeof text === 'string') {
