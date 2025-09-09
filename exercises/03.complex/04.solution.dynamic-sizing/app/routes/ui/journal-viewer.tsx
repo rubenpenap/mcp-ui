@@ -21,15 +21,13 @@ export default function JournalViewer({ loaderData }: Route.ComponentProps) {
 	useEffect(() => {
 		window.parent.postMessage({ type: 'ui-lifecycle-iframe-ready' }, '*')
 
-		requestAnimationFrame(() => {
-			const height = document.documentElement.scrollHeight
-			const width = document.documentElement.scrollWidth
+		const height = document.documentElement.scrollHeight
+		const width = document.documentElement.scrollWidth
 
-			window.parent.postMessage(
-				{ type: 'ui-size-change', payload: { height, width } },
-				'*',
-			)
-		})
+		window.parent.postMessage(
+			{ type: 'ui-size-change', payload: { height, width } },
+			'*',
+		)
 	}, [])
 
 	const handleEntryDeleted = (entryId: number) => {

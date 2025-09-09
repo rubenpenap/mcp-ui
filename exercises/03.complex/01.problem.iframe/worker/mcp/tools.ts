@@ -61,6 +61,32 @@ export async function initializeTools(agent: EpicMeMCP) {
 	)
 
 	agent.server.registerTool(
+		'view_journal',
+		{
+			title: 'View Journal',
+			description: 'View the journal visually',
+			annotations: {
+				readOnlyHint: true,
+				openWorldHint: false,
+			} satisfies ToolAnnotations,
+		},
+		// 🦉 because this tool does not have an inputSchema, the first argument will be the "extra" object
+		// which includes the requestInfo object:
+		async ({ requestInfo }) => {
+			// 🐨 create an iframeURL at ${requestInfo.headers['x-origin']}/ui/journal-viewer
+
+			return {
+				content: [
+					// 🐨 create a UI resource with the uri `ui://view-journal/${Date.now()}`
+					// 🐨 set the content.type to "externalUrl" and the content.iframeUrl to the iframeUrl you created
+					// 🐨 set the encoding to text
+					createText('TODO...'),
+				],
+			}
+		},
+	)
+
+	agent.server.registerTool(
 		'get_entry',
 		{
 			title: 'Get Entry',

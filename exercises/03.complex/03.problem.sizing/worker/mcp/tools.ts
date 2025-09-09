@@ -70,8 +70,11 @@ export async function initializeTools(agent: EpicMeMCP) {
 				openWorldHint: false,
 			} satisfies ToolAnnotations,
 		},
-		async () => {
-			const iframeUrl = new URL('/ui/journal-viewer', agent.props.baseUrl)
+		async ({ requestInfo }) => {
+			const iframeUrl = new URL(
+				'/ui/journal-viewer',
+				requestInfo.headers['x-origin'],
+			)
 
 			return {
 				content: [
@@ -82,6 +85,7 @@ export async function initializeTools(agent: EpicMeMCP) {
 							iframeUrl: iframeUrl.toString(),
 						},
 						encoding: 'text',
+						// 🐨 add uiMetadata with the key 'preferred-frame-size' with a width of 800px and a height of 600px
 					}),
 				],
 			}

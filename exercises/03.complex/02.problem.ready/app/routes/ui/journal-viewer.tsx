@@ -1,4 +1,9 @@
-import { useState, useTransition } from 'react'
+import {
+	// 💰 you'll need this to trigger the postMessage
+	// useEffect,
+	useState,
+	useTransition,
+} from 'react'
 import {
 	ErrorBoundary,
 	useErrorBoundary,
@@ -17,6 +22,12 @@ export default function JournalViewer({ loaderData }: Route.ComponentProps) {
 	const [deletedEntryIds, setDeletedEntryIds] = useState<Set<number>>(
 		() => new Set([]),
 	)
+
+	// 💰 here's the useEffect:
+	// useEffect(() => {
+	// 	🐨 call window.parent.postMessage with the type 'ui-lifecycle-iframe-ready'
+	// 	and the wildcard '*' for the targetOrigin
+	// }, [])
 
 	const handleEntryDeleted = (entryId: number) => {
 		setDeletedEntryIds((prev) => new Set([...prev, entryId]))

@@ -18,7 +18,10 @@ import { type CallToolResult } from '@modelcontextprotocol/sdk/types.js'
 import { z } from 'zod'
 import { type EpicMeMCP } from './index.ts'
 import { suggestTagsSampling } from './sampling.ts'
+// 💣 get rid of this:
 import { getTagViewUI } from './ui.ts'
+// 💰 bring this in instead:
+// import { getTagRemoteDomUIScript } from './ui.ts'
 
 export async function initializeTools(agent: EpicMeMCP) {
 	agent.server.registerTool(
@@ -242,8 +245,11 @@ export async function initializeTools(agent: EpicMeMCP) {
 					createUIResource({
 						uri: `ui://view-tag/${id}`,
 						content: {
+							// 🐨 instead of rawHtml, use remoteDom:
 							type: 'rawHtml',
+							// 🐨 instead of htmlString, use script and await getTagRemoteDomUIScript:
 							htmlString: await getTagViewUI(agent.db, id),
+							// 🐨 add framework: 'react'
 						},
 						encoding: 'text',
 					}),

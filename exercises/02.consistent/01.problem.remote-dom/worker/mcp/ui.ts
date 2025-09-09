@@ -1,5 +1,23 @@
 import { type DBClient } from '@epic-web/epicme-db-client'
 
+export async function getTagRemoteDomUIScript(db: DBClient, tagId: number) {
+	const tag = await db.getTag(tagId)
+	if (tag) {
+		return /* js */ `
+// 🐨 Create a ui-stack element with vertical direction, spacing 20, and center alignment
+// 🐨 Create a ui-text element for the tag name and append it to the stack
+// 🐨 Create a ui-text element for the tag description and append it to the stack
+// 🐨 Append the stack to the (globally available) "root" element
+		`.trim()
+	} else {
+		return /* js */ `
+// 🐨 Create a ui-stack element with vertical direction, spacing 20, and center alignment
+// 🐨 Create a ui-text element with content "Tag not found" and append it to the stack
+// 🐨 Append the stack to the (globally available) "root" element
+		`.trim()
+	}
+}
+
 export async function getTagViewUI(db: DBClient, tagId: number) {
 	const tag = await db.getTag(tagId)
 	if (tag) {

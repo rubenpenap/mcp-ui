@@ -18,7 +18,8 @@ const resource = createUIResource({
 	content: {
 		type: 'remoteDom',
 		framework: 'react',
-		script: `
+		// some editors will syntax highlight a string followed by the /* js */ comment
+		script: /* js */ `
 			const stack = document.createElement('ui-stack');
 			stack.setAttribute('direction', 'vertical');
 			stack.setAttribute('spacing', '20');
@@ -49,6 +50,27 @@ const resource = createUIResource({
 	components are automatically styled and provide consistent behavior across the
 	host application.
 </callout-info>
+
+You need to implement the `getTagRemoteDomUIScript` function to create a Remote DOM version of the tag viewer. Here's what you need to know:
+
+- `ui-stack` - Container with layout properties (direction, spacing, align)
+- `ui-text` - Text content with automatic styling
+
+```js
+const stack = document.createElement('ui-stack')
+stack.setAttribute('direction', 'vertical')
+stack.setAttribute('spacing', '20')
+stack.setAttribute('align', 'center')
+
+const title = document.createElement('ui-text')
+title.setAttribute('content', 'Your content here')
+stack.appendChild(title)
+
+// "root" is globally available in your script
+root.appendChild(stack)
+```
+
+There's more available from remote-dom, but we'll keep it simple for now.
 
 📜 [MCP UI
 Server
