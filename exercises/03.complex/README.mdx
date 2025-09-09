@@ -39,24 +39,6 @@ The iframe approach provides several key advantages:
 4. **Responsive Design**: Leverage CSS frameworks and responsive design patterns
 5. **Communication Protocol**: Standardized `postMessage` API for iframe-to-host communication
 
-<callout-success>
-	From [the MCP UI embeddable UI
-	documentation](https://mcpui.dev/guide/embeddable-ui): Iframe-based UI
-	components communicate with the parent window via `postMessage`, enabling rich
-	interactions while maintaining security boundaries between the iframe and host
-	application.
-</callout-success>
-
-The communication protocol between iframe and host follows a standardized message structure:
-
-```typescript
-type Message = {
-	type: string
-	messageId?: string // optional, used for tracking the message
-	payload: Record<string, unknown>
-}
-```
-
 Key message types include:
 
 - `ui-lifecycle-iframe-ready` - Notify host that iframe is ready to receive messages
