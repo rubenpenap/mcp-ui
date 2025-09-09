@@ -10,6 +10,7 @@ const requestHandler = createRequestHandler(
 export default {
 	fetch: async (request, env, ctx) => {
 		const url = new URL(request.url)
+
 		if (url.pathname === '/mcp') {
 			// 🐨 create a headers object based on the request
 			// - then add the x-origin header set to the url.origin
