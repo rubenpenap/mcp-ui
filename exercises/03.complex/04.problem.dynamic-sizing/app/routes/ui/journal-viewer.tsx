@@ -20,6 +20,11 @@ export default function JournalViewer({ loaderData }: Route.ComponentProps) {
 
 	useEffect(() => {
 		window.parent.postMessage({ type: 'ui-lifecycle-iframe-ready' }, '*')
+
+		// 🐨 get the height of the document.documentElement
+		// 🐨 get the width of the document.documentElement
+		// 🐨 call window.parent.postMessage with the type 'ui-size-change' and the payload { height, width }
+		// 🐨 set the targetOrigin to '*'
 	}, [])
 
 	const handleEntryDeleted = (entryId: number) => {
@@ -334,7 +339,6 @@ function SummarizeEntryButtonImpl({
 	const handleSummarize = () => {
 		startTransition(async () => {
 			try {
-				// Get the full entry content first
 				throw new Error('Sending prompts is not yet supported')
 			} catch (err) {
 				showBoundary(err)

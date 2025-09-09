@@ -339,11 +339,14 @@ function SummarizeEntryButtonImpl({
 }) {
 	const [isPending, startTransition] = useTransition()
 	const { showBoundary } = useErrorBoundary()
+	// 🐨 get an unmountSignal from useUnmountSignal
 
 	const handleSummarize = () => {
 		startTransition(async () => {
 			try {
-				// Get the full entry content first
+				// 🐨 replace this throw with await sendMcpMessage
+				// the type will be 'prompt', the prompt will be `Please use the EpicMe get_entry tool to get entry ${entry.id} and provide a concise and insightful summary of it.`
+				// pass the signal you got from useUnmountSignal
 				throw new Error('Sending prompts is not yet supported')
 			} catch (err) {
 				showBoundary(err)

@@ -7,8 +7,8 @@ import {
 } from 'react-error-boundary'
 import { z } from 'zod'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
-import { useMcpUiInit, sendMcpMessage } from '#app/utils/mcp.ts'
-import { useDoubleCheck, useUnmountSignal } from '#app/utils/misc.ts'
+import { useMcpUiInit } from '#app/utils/mcp.ts'
+import { useDoubleCheck } from '#app/utils/misc.ts'
 import { type Route } from './+types/entry-viewer.tsx'
 
 export async function loader({ context, params }: Route.LoaderArgs) {
@@ -176,19 +176,13 @@ function DeleteEntryButtonImpl({
 	const [isPending, startTransition] = useTransition()
 	const { doubleCheck, getButtonProps } = useDoubleCheck()
 	const { showBoundary } = useErrorBoundary()
-	const unmountSignal = useUnmountSignal()
 
 	const handleDelete = () => {
 		if (!doubleCheck) return
 
 		startTransition(async () => {
 			try {
-				await sendMcpMessage(
-					'tool',
-					{ toolName: 'delete_entry', params: { id: entry.id } },
-					{ signal: unmountSignal },
-				)
-				onDeleted()
+				throw new Error('TODO: this is not yet implemented')
 			} catch (err) {
 				showBoundary(err)
 			}

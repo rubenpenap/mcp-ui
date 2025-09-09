@@ -4,7 +4,11 @@ import {
 	useErrorBoundary,
 	type FallbackProps,
 } from 'react-error-boundary'
-import { useMcpUiInit } from '#app/utils/mcp.ts'
+import {
+	useMcpUiInit,
+	// 💰 you'll want this:
+	// sendLinkMcpMessage
+} from '#app/utils/mcp.ts'
 import { useDoubleCheck } from '#app/utils/misc.ts'
 import { type Route } from './+types/journal-viewer.tsx'
 
@@ -155,6 +159,7 @@ function XPostLinkImpl({ entryCount }: { entryCount: number }) {
 				const url = new URL('https://x.com/intent/post')
 				url.searchParams.set('text', text)
 
+				// 🐨 replace this with await sendLinkMcpMessage(url.toString())
 				throw new Error(`Links not yet supported`)
 			} catch (err) {
 				showBoundary(err)
@@ -333,7 +338,6 @@ function SummarizeEntryButtonImpl({
 	const handleSummarize = () => {
 		startTransition(async () => {
 			try {
-				// Get the full entry content first
 				throw new Error('Sending prompts is not yet supported')
 			} catch (err) {
 				showBoundary(err)

@@ -103,3 +103,5 @@ function sendMcpMessage(
 }
 
 export { sendMcpMessage }
+
+// ‼️ review this: https://github.com/idosal/mcp-ui/issues/106

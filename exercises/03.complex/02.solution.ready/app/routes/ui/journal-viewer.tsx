@@ -334,7 +334,6 @@ function SummarizeEntryButtonImpl({
 	const handleSummarize = () => {
 		startTransition(async () => {
 			try {
-				// Get the full entry content first
 				throw new Error('Sending prompts is not yet supported')
 			} catch (err) {
 				showBoundary(err)

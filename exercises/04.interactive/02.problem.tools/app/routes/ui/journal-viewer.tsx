@@ -278,10 +278,14 @@ function ViewEntryButtonImpl({
 }) {
 	const [isPending, startTransition] = useTransition()
 	const { showBoundary } = useErrorBoundary()
+	// 🐨 get an unmountSignal from useUnmountSignal
 
 	const handleViewEntry = () => {
 		startTransition(async () => {
 			try {
+				// 🐨 replace this throw with await sendMcpMessage
+				// the type will be 'tool', the toolName will be 'view_entry', and the params will be { id: entry.id }
+				// pass the signal you got
 				throw new Error('Calling tools is not yet supported')
 			} catch (err) {
 				showBoundary(err)
@@ -338,7 +342,6 @@ function SummarizeEntryButtonImpl({
 	const handleSummarize = () => {
 		startTransition(async () => {
 			try {
-				// Get the full entry content first
 				throw new Error('Sending prompts is not yet supported')
 			} catch (err) {
 				showBoundary(err)
