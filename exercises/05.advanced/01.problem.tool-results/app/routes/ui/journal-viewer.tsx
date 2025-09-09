@@ -236,6 +236,7 @@ function DeleteEntryButtonImpl({
 				// pass the schema you created above
 				// 🦉 the result of the sendMcpMessage call should be type safe thanks to your schema
 				// 🐨 if the result.structuredContent.success is true, call onDeleted
+				// 🐨 if the result.structuredContent.success is false, use showBoundary to show an error
 				throw new Error('Calling tools is not yet supported')
 			} catch (err) {
 				showBoundary(err)

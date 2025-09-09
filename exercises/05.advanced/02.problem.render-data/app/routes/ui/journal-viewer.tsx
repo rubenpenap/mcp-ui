@@ -237,6 +237,8 @@ function DeleteEntryButtonImpl({
 				)
 				if (result.structuredContent.success) {
 					onDeleted()
+				} else {
+					showBoundary(new Error('Failed to delete entry'))
 				}
 			} catch (err) {
 				showBoundary(err)

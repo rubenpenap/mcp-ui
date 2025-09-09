@@ -109,15 +109,11 @@ const renderDataQueue: Array<{ type: string; payload: any }> = []
 
 // Set up global listener immediately when module loads (only in the client)
 if (typeof document !== 'undefined') {
-	window.addEventListener(
-		'message',
-		(event) => {
-			if (event.data?.type === 'ui-lifecycle-iframe-render-data') {
-				renderDataQueue.push(event.data)
-			}
-		},
-		{ once: false },
-	)
+	window.addEventListener('message', (event) => {
+		if (event.data?.type === 'ui-lifecycle-iframe-render-data') {
+			renderDataQueue.push(event.data)
+		}
+	})
 }
 
 export function waitForRenderData<RenderData>(
@@ -152,6 +148,6 @@ export function waitForRenderData<RenderData>(
 			return result.success ? resolve(result.data) : reject(result.error)
 		}
 
-		window.addEventListener('message', handleMessage, { once: true })
+		window.addEventListener('message', handleMessage)
 	})
 }
