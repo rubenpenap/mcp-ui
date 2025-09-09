@@ -13,6 +13,8 @@ import {
 	updateTagInputSchema,
 } from '@epic-web/epicme-db-client/schema'
 import { invariant } from '@epic-web/invariant'
+// 💰 you're gonna want this:
+// import { createUIResource } from '@mcp-ui/server'
 import { type CallToolResult } from '@modelcontextprotocol/sdk/types.js'
 import { z } from 'zod'
 import { type EpicMeMCP } from './index.ts'
@@ -219,6 +221,30 @@ export async function initializeTools(agent: EpicMeMCP) {
 					createTagResourceLink(createdTag),
 					createText(structuredContent),
 				],
+			}
+		},
+	)
+
+	agent.server.registerTool(
+		'view_tag',
+		{
+			title: 'View Tag',
+			description: 'View a tag by ID visually',
+			annotations: {
+				readOnlyHint: true,
+				openWorldHint: false,
+			} satisfies ToolAnnotations,
+			inputSchema: tagIdSchema,
+		},
+		async ({ id }) => {
+			// 🐨 get the tag from the database
+
+			// 🐨 create the HTML string that displays the tag's name and description
+			// 💯 if there's no tag, display a message saying "Tag not found"
+
+			return {
+				// 🐨 use the createUIResource function to create a UI resource with the raw HTML string
+				content: [createText('TODO...')],
 			}
 		},
 	)
