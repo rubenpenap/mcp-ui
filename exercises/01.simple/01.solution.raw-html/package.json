@@ -15,7 +15,7 @@
   "dependencies": {
     "@epic-web/invariant": "^1.0.0",
     "@mcp-ui/server": "^5.10.0",
-    "@modelcontextprotocol/sdk": "^1.17.5",
+    "@modelcontextprotocol/sdk": "^1.18.0",
     "agents": "0.1.1",
     "zod": "^3.25.67"
   },
