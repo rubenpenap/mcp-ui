@@ -96,4 +96,10 @@ function sendMcpMessage(
 
 export { sendMcpMessage }
 
-// ‼️ review this: https://github.com/idosal/mcp-ui/issues/106
+// 🐨 export a waitForRenderData function that works like sendMcpMessage, but for render data
+// 🐨 it should create a messageId and send it to the parent frame with the type 'ui-request-render-data'
+// 🐨 handleMessage should check the event.data.type is 'ui-message-response' and the messageId is the same as the one sent
+// 🐨 if the event.data.payload.error is present, return reject(error)
+// 🐨 if the event.data.payload.response is present, return resolve(response)
+// 💯 add schema as an optional parameter and parse the response if it is present
+// 🦺 if you'd like to make it more typesafe, make waitForRenderData a generic (withForRenderData<RenderData>), pass the generic type to the schema (z.ZodSchema<RenderData>) and set it as the return type (Promise<RenderData>)
