@@ -96,48 +96,31 @@ function sendMcpMessage(
 
 export { sendMcpMessage }
 
-// Module-level queue for render data events
-const renderDataQueue: Array<{ type: string; payload: any }> = []
-
-// Set up global listener immediately when module loads (only in the client)
-if (typeof document !== 'undefined') {
-	window.addEventListener('message', (event) => {
-		if (event.data?.type === 'ui-lifecycle-iframe-render-data') {
-			renderDataQueue.push(event.data)
-		}
-	})
-}
-
 export function waitForRenderData<RenderData>(
 	schema: z.ZodSchema<RenderData>,
 ): Promise<RenderData> {
 	return new Promise((resolve, reject) => {
-		// Check if we already received the data
-		const queuedEvent = renderDataQueue.find(
-			(event) => event.type === 'ui-lifecycle-iframe-render-data',
-		)
-		if (queuedEvent) {
-			const result = schema.safeParse(queuedEvent.payload.renderData)
-			if (!result.success) {
-				console.error('Invalid render data', queuedEvent.payload.renderData)
-			}
-			return result.success ? resolve(result.data) : reject(result.error)
-		}
+		const messageId = crypto.randomUUID()
 
-		// Otherwise, set up the normal listening logic
-		function cleanup() {
-			window.removeEventListener('message', handleMessage)
-		}
+		window.parent.postMessage(
+			{ type: 'ui-request-render-data', messageId },
+			'*',
+		)
 
 		function handleMessage(event: MessageEvent) {
-			if (event.data?.type !== 'ui-lifecycle-iframe-render-data') return
+			if (event.data?.type !== 'ui-message-response') return
+			if (event.data.messageId !== messageId) return
+			window.removeEventListener('message', handleMessage)
 
-			const result = schema.safeParse(event.data.payload)
-			cleanup()
-			if (!result.success) {
-				console.error('Invalid render data', event.data.payload)
-			}
-			return result.success ? resolve(result.data) : reject(result.error)
+			const { response, error } = event.data.payload
+
+			if (error) return reject(error)
+			if (!schema) return resolve(response)
+
+			const parseResult = schema.safeParse(response)
+			if (!parseResult.success) return reject(parseResult.error)
+
+			return resolve(parseResult.data)
 		}
 
 		window.addEventListener('message', handleMessage)
