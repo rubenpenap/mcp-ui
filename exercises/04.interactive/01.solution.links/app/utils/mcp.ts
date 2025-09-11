@@ -29,7 +29,10 @@ export function sendLinkMcpMessage(url: string) {
 			window.removeEventListener('message', handleMessage)
 
 			const { response, error } = event.data.payload
-			return error ? reject(error) : resolve(response)
+
+			if (error) return reject(error)
+
+			return resolve(response)
 		}
 
 		window.addEventListener('message', handleMessage)
