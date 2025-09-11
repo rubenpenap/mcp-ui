@@ -108,16 +108,16 @@ export function waitForRenderData<RenderData>(
 		)
 
 		function handleMessage(event: MessageEvent) {
-			if (event.data?.type !== 'ui-message-response') return
+			if (event.data?.type !== 'ui-lifecycle-iframe-render-data') return
 			if (event.data.messageId !== messageId) return
 			window.removeEventListener('message', handleMessage)
 
-			const { response, error } = event.data.payload
+			const { renderData, error } = event.data.payload
 
 			if (error) return reject(error)
-			if (!schema) return resolve(response)
+			if (!schema) return resolve(renderData)
 
-			const parseResult = schema.safeParse(response)
+			const parseResult = schema.safeParse(renderData)
 			if (!parseResult.success) return reject(parseResult.error)
 
 			return resolve(parseResult.data)
