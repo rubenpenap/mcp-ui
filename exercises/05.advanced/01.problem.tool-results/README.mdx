@@ -10,7 +10,7 @@ const result = await sendMcpMessage(
 		toolName: 'analyze_code',
 		params: { filePath: 'src/utils/validation.ts' },
 	},
-	{ schema: codeAnalysisSchema, signal: unmountSignal },
+	{ schema: codeAnalysisSchema },
 )
 
 // Client can access structured data and respond intelligently

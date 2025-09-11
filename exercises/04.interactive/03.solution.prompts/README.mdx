@@ -4,8 +4,7 @@
 
 Under the hood, we wired the iframe to send a `prompt` message through our MCP bridge and handle the response cleanly:
 
-- **New capability**: `sendMcpMessage('prompt', { prompt }, { signal })` so components can request AI assistance directly.
+- **New capability**: `sendMcpMessage('prompt', { prompt })` so components can request AI assistance directly.
 - **UX benefit**: No reloads, no context loss. The UI stays responsive while the request is in flight.
-- **Reliability**: Requests are abortable via `useUnmountSignal()`, so we don't leak work when users navigate away.
 
 This turns "Summarize" from a promise into a dependable action. Users now trust that our UI can ask the right question and deliver the right kind of answer at the right moment.

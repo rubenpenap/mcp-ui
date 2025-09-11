@@ -1,16 +1,4 @@
-import { useEffect, useState } from 'react'
-
-export function useUnmountSignal() {
-	const [abortController] = useState(() => new AbortController())
-
-	useEffect(() => {
-		return () => {
-			abortController.abort()
-		}
-	}, [abortController])
-
-	return abortController.signal
-}
+import { useState } from 'react'
 
 export function getErrorMessage(error: unknown) {
 	if (typeof error === 'string') return error

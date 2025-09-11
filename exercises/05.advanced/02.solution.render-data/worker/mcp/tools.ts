@@ -70,11 +70,8 @@ export async function initializeTools(agent: EpicMeMCP) {
 				openWorldHint: false,
 			} satisfies ToolAnnotations,
 		},
-		async ({ requestInfo }) => {
-			const iframeUrl = new URL(
-				'/ui/journal-viewer',
-				requestInfo.headers['x-origin'],
-			)
+		async () => {
+			const iframeUrl = new URL('/ui/journal-viewer', agent.requireBaseUrl())
 
 			return {
 				content: [
@@ -462,7 +459,7 @@ export async function initializeTools(agent: EpicMeMCP) {
 			inputSchema: entryIdSchema,
 		},
 		async ({ id }) => {
-			const iframeUrl = new URL('/ui/entry-viewer', agent.props.baseUrl)
+			const iframeUrl = new URL('/ui/entry-viewer', agent.requireBaseUrl())
 			const entry = await agent.db.getEntry(id)
 			invariant(entry, `Entry with ID "${id}" not found`)
 

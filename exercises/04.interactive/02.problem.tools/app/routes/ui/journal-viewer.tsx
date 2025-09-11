@@ -5,7 +5,7 @@ import {
 	type FallbackProps,
 } from 'react-error-boundary'
 import { useMcpUiInit, sendMcpMessage } from '#app/utils/mcp.ts'
-import { useDoubleCheck, useUnmountSignal } from '#app/utils/misc.ts'
+import { useDoubleCheck } from '#app/utils/misc.ts'
 import { type Route } from './+types/journal-viewer.tsx'
 
 export async function loader({ context }: Route.LoaderArgs) {
@@ -148,7 +148,6 @@ function XPostLinkError({ error, resetErrorBoundary }: FallbackProps) {
 function XPostLinkImpl({ entryCount }: { entryCount: number }) {
 	const [isPending, startTransition] = useTransition()
 	const { showBoundary } = useErrorBoundary()
-	const unmountSignal = useUnmountSignal()
 	const handlePostOnX = () => {
 		startTransition(async () => {
 			try {
@@ -156,11 +155,7 @@ function XPostLinkImpl({ entryCount }: { entryCount: number }) {
 				const url = new URL('https://x.com/intent/post')
 				url.searchParams.set('text', text)
 
-				await sendMcpMessage(
-					'link',
-					{ url: url.toString() },
-					{ signal: unmountSignal },
-				)
+				await sendMcpMessage('link', { url: url.toString() })
 			} catch (err) {
 				showBoundary(err)
 			}
@@ -278,14 +273,12 @@ function ViewEntryButtonImpl({
 }) {
 	const [isPending, startTransition] = useTransition()
 	const { showBoundary } = useErrorBoundary()
-	// 🐨 get an unmountSignal from useUnmountSignal
 
 	const handleViewEntry = () => {
 		startTransition(async () => {
 			try {
 				// 🐨 replace this throw with await sendMcpMessage
 				// the type will be 'tool', the toolName will be 'view_entry', and the params will be { id: entry.id }
-				// pass the signal you got
 				throw new Error('Calling tools is not yet supported')
 			} catch (err) {
 				showBoundary(err)

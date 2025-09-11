@@ -12,13 +12,10 @@ export default {
 		const url = new URL(request.url)
 
 		if (url.pathname === '/mcp') {
-			const headers = new Headers(request.headers)
-			headers.set('x-origin', url.origin)
-			const newRequest = new Request(request, { headers })
-
+			ctx.props.baseUrl = url.origin
 			return EpicMeMCP.serve('/mcp', {
 				binding: 'EPIC_ME_MCP_OBJECT',
-			}).fetch(newRequest, env, ctx)
+			}).fetch(request, env, ctx)
 		}
 
 		return requestHandler(request, {

@@ -15,10 +15,7 @@ export function useMcpUiInit() {
 	}, [])
 }
 
-type MessageOptions = {
-	schema?: z.ZodSchema
-	signal?: AbortSignal
-}
+type MessageOptions = { schema?: z.ZodSchema }
 
 type McpMessageReturnType<Options> = Promise<
 	Options extends { schema: z.ZodSchema } ? z.infer<Options['schema']> : unknown
@@ -47,20 +44,21 @@ function sendMcpMessage<Options extends MessageOptions>(
 	options?: Options,
 ): McpMessageReturnType<Options>
 
+function sendMcpMessage<Options extends MessageOptions>(
+	type: 'link',
+	payload: McpMessageTypes['link'],
+	options?: Options,
+): McpMessageReturnType<Options>
+
 function sendMcpMessage(
 	type: McpMessageType,
 	payload: McpMessageTypes[McpMessageType],
 	options: MessageOptions = {},
 ): McpMessageReturnType<typeof options> {
-	const { signal, schema } = options
+	const { schema } = options
 	const messageId = crypto.randomUUID()
 
 	return new Promise((resolve, reject) => {
-		if (signal?.aborted) {
-			reject(new Error('Operation aborted before it began'))
-			return
-		}
-
 		if (!window.parent || window.parent === window) {
 			console.log(`[MCP] No parent frame available. Would have sent message:`, {
 				type,
@@ -74,28 +72,22 @@ function sendMcpMessage(
 		window.parent.postMessage({ type, messageId, payload }, '*')
 
 		function handleMessage(event: MessageEvent) {
-			if (event.data.type === 'ui-message-response') {
-				const {
-					messageId: responseMessageId,
-					payload: { response, error },
-				} = event.data
-				if (responseMessageId === messageId) {
-					window.removeEventListener('message', handleMessage)
+			if (event.data.type !== 'ui-message-response') return
+			if (event.data.messageId !== messageId) return
+			window.removeEventListener('message', handleMessage)
 
-					if (error) return reject(new Error(error))
+			const { response, error } = event.data.payload
 
-					if (!schema) return resolve(response)
+			if (error) return reject(error)
+			if (!schema) return resolve(response)
 
-					const parseResult = schema.safeParse(response)
-					if (!parseResult.success) {
-						return reject(new Error(parseResult.error.message))
-					}
-					return resolve(parseResult.data)
-				}
-			}
+			const parseResult = schema.safeParse(response)
+			if (!parseResult.success) return reject(parseResult.error)
+
+			return resolve(parseResult.data)
 		}
 
-		window.addEventListener('message', handleMessage, { signal })
+		window.addEventListener('message', handleMessage)
 	})
 }
 

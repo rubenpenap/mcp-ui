@@ -70,10 +70,8 @@ export async function initializeTools(agent: EpicMeMCP) {
 				openWorldHint: false,
 			} satisfies ToolAnnotations,
 		},
-		// 🦉 because this tool does not have an inputSchema, the first argument will be the "extra" object
-		// which includes the requestInfo object:
-		async ({ requestInfo }) => {
-			// 🐨 create an iframeURL at ${requestInfo.headers['x-origin']}/ui/journal-viewer
+		async () => {
+			// 🐨 create an iframeURL at ${agent.requireBaseUrl()}/ui/journal-viewer
 
 			return {
 				content: [

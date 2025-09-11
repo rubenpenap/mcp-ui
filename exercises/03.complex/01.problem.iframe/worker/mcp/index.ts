@@ -1,4 +1,5 @@
 import { type DBClient } from '@epic-web/epicme-db-client'
+import { invariant } from '@epic-web/invariant'
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { McpAgent } from 'agents/mcp'
 import { db } from '../db.ts'
@@ -6,7 +7,8 @@ import { initializePrompts } from './prompts.ts'
 import { initializeResources } from './resources.ts'
 import { initializeTools } from './tools.ts'
 
-type Props = { baseUrl: string }
+// 🐨 add a baseUrl property to the Props type
+type Props = {}
 type State = {}
 
 export class EpicMeMCP extends McpAgent<Env, State, Props> {
@@ -41,6 +43,8 @@ You can also help users add tags to their entries and get all tags for an entry.
 		await initializeResources(this)
 		await initializePrompts(this)
 	}
+	// 🐨 create a requireBaseUrl method that returns the baseUrl
+	// 🐨 add a check to ensure the baseUrl exists and throw an error if it doesn't
 }
 
 export default {
@@ -48,7 +52,6 @@ export default {
 		const url = new URL(request.url)
 
 		if (url.pathname === '/mcp') {
-			// can add this as request headers once https://github.com/cloudflare/agents/pull/426
 			ctx.props.baseUrl = url.origin
 
 			const mcp = EpicMeMCP.serve('/mcp', {

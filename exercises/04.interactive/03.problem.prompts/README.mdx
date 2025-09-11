@@ -6,20 +6,16 @@ Here's the pattern you'll use from components:
 
 ```ts
 // Send a prompt message to the host
-await sendMcpMessage(
-	'prompt',
-	{
-		prompt:
-			'Please ask CafeLedger get_balance for account espresso-ops and summarize the budget health.',
-	},
-	{ signal: unmountSignal },
-)
+await sendMcpMessage('prompt', {
+	prompt:
+		'Please ask CafeLedger get_balance for account espresso-ops and summarize the budget health.',
+})
 ```
 
 What you need to build:
 
 - Add a new `'prompt'` message type to `app/utils/mcp.ts` so the bridge can validate payloads.
 - Add a function overload for `sendMcpMessage('prompt', payload, options)` that mirrors the `'link'` overload but accepts `{ prompt: string }`.
-- In the summarize button component, get an `AbortSignal` via `useUnmountSignal()` and call `sendMcpMessage('prompt', { prompt }, { signal })`.
+- In the summarize button component, call `sendMcpMessage('prompt', { prompt })`.
 
 👨‍💼 Let's wire up the prompt path so pressing "Summarize" works.

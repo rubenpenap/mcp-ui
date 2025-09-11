@@ -5,17 +5,12 @@
 You're going to build upon the abstraction you and 🧝‍♀️ Kellie built in the last exercise so you can use it for `tool` calls as well:
 
 ```ts
-await sendMcpMessage(
-	'tool',
-	{ toolName: 'analyze_rock_sample', params: { sampleId: 'mars-2024-001' } },
-	{ signal: unmountSignal },
-)
+await sendMcpMessage('tool', {
+	toolName: 'analyze_rock_sample',
+	params: { sampleId: 'mars-2024-001' },
+})
 ```
 
-🧝‍♀️ Note: I added support for `signal` to the `sendMcpMessage` function so you can cancel the tool call if the component unmounts.
+You need to add the 'tool' type to `sendMcpMessage` and wire up the actual tool call.
 
-A component can unmount when it's removed from the page. Without canceling pending tool calls, you'll get memory leaks and potentially update state on unmounted components, causing React warnings and unexpected behavior.
-
-I've set up `useUnmountSignal` for you. You need to add the 'tool' type to `sendMcpMessage` and wire up the actual tool call.
-
-👨‍💼 Thanks Kellie! Let's implement this to make those journal entries interactive.
+Now, let's implement this to make those journal entries interactive.

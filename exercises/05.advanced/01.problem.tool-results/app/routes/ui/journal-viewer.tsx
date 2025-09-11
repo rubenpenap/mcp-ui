@@ -7,7 +7,7 @@ import {
 // 💰 you'll want this:
 // import { z } from 'zod'
 import { useMcpUiInit, sendMcpMessage } from '#app/utils/mcp.ts'
-import { useDoubleCheck, useUnmountSignal } from '#app/utils/misc.ts'
+import { useDoubleCheck } from '#app/utils/misc.ts'
 import { type Route } from './+types/journal-viewer.tsx'
 
 export async function loader({ context }: Route.LoaderArgs) {
@@ -150,7 +150,6 @@ function XPostLinkError({ error, resetErrorBoundary }: FallbackProps) {
 function XPostLinkImpl({ entryCount }: { entryCount: number }) {
 	const [isPending, startTransition] = useTransition()
 	const { showBoundary } = useErrorBoundary()
-	const unmountSignal = useUnmountSignal()
 	const handlePostOnX = () => {
 		startTransition(async () => {
 			try {
@@ -158,11 +157,7 @@ function XPostLinkImpl({ entryCount }: { entryCount: number }) {
 				const url = new URL('https://x.com/intent/post')
 				url.searchParams.set('text', text)
 
-				await sendMcpMessage(
-					'link',
-					{ url: url.toString() },
-					{ signal: unmountSignal },
-				)
+				await sendMcpMessage('link', { url: url.toString() })
 			} catch (err) {
 				showBoundary(err)
 			}
@@ -225,14 +220,12 @@ function DeleteEntryButtonImpl({
 	const [isPending, startTransition] = useTransition()
 	const { doubleCheck, getButtonProps } = useDoubleCheck()
 	const { showBoundary } = useErrorBoundary()
-	// 🐨 get an unmountSignal from useUnmountSignal
 
 	const handleDelete = () => {
 		startTransition(async () => {
 			try {
 				// 🐨 replace this throw with await sendMcpMessage
 				// the type will be 'tool', the toolName will be 'delete_entry', and the params will be { id: entry.id }
-				// pass the signal you got from useUnmountSignal
 				// pass the schema you created above
 				// 🦉 the result of the sendMcpMessage call should be type safe thanks to your schema
 				// 🐨 if the result.structuredContent.success is true, call onDeleted
@@ -291,16 +284,14 @@ function ViewEntryButtonImpl({
 }) {
 	const [isPending, startTransition] = useTransition()
 	const { showBoundary } = useErrorBoundary()
-	const unmountSignal = useUnmountSignal()
 
 	const handleViewEntry = () => {
 		startTransition(async () => {
 			try {
-				await sendMcpMessage(
-					'tool',
-					{ toolName: 'view_entry', params: { id: entry.id } },
-					{ signal: unmountSignal },
-				)
+				await sendMcpMessage('tool', {
+					toolName: 'view_entry',
+					params: { id: entry.id },
+				})
 			} catch (err) {
 				showBoundary(err)
 			}
@@ -352,13 +343,12 @@ function SummarizeEntryButtonImpl({
 }) {
 	const [isPending, startTransition] = useTransition()
 	const { showBoundary } = useErrorBoundary()
-	const unmountSignal = useUnmountSignal()
 
 	const handleSummarize = () => {
 		startTransition(async () => {
 			try {
 				const prompt = `Please use the EpicMe get_entry tool to get entry ${entry.id} and provide a concise and insightful summary of it.`
-				await sendMcpMessage('prompt', { prompt }, { signal: unmountSignal })
+				await sendMcpMessage('prompt', { prompt })
 			} catch (err) {
 				showBoundary(err)
 			}

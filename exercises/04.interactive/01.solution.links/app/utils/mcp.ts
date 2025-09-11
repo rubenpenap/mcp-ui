@@ -24,21 +24,12 @@ export function sendLinkMcpMessage(url: string) {
 		)
 
 		function handleMessage(event: MessageEvent) {
-			if (event.data.type === 'ui-message-response') {
-				const {
-					messageId: responseMessageId,
-					payload: { response, error },
-				} = event.data
-				if (responseMessageId === messageId) {
-					window.removeEventListener('message', handleMessage)
+			if (event.data.type !== 'ui-message-response') return
+			if (event.data.messageId !== messageId) return
+			window.removeEventListener('message', handleMessage)
 
-					if (error) {
-						reject(new Error(error))
-					} else {
-						resolve(response)
-					}
-				}
-			}
+			const { response, error } = event.data.payload
+			return error ? reject(error) : resolve(response)
 		}
 
 		window.addEventListener('message', handleMessage)

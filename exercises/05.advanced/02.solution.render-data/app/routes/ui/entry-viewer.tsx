@@ -11,7 +11,7 @@ import {
 	sendMcpMessage,
 	waitForRenderData,
 } from '#app/utils/mcp.ts'
-import { useDoubleCheck, useUnmountSignal } from '#app/utils/misc.ts'
+import { useDoubleCheck } from '#app/utils/misc.ts'
 import { type Route } from './+types/entry-viewer.tsx'
 
 export async function clientLoader() {
@@ -215,18 +215,16 @@ function DeleteEntryButtonImpl({
 	const [isPending, startTransition] = useTransition()
 	const { doubleCheck, getButtonProps } = useDoubleCheck()
 	const { showBoundary } = useErrorBoundary()
-	const unmountSignal = useUnmountSignal()
 
 	const handleDelete = () => {
 		if (!doubleCheck) return
 
 		startTransition(async () => {
 			try {
-				await sendMcpMessage(
-					'tool',
-					{ toolName: 'delete_entry', params: { id: entry.id } },
-					{ signal: unmountSignal },
-				)
+				await sendMcpMessage('tool', {
+					toolName: 'delete_entry',
+					params: { id: entry.id },
+				})
 				onDeleted()
 			} catch (err) {
 				showBoundary(err)

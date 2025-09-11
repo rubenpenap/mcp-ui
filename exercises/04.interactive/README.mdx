@@ -11,24 +11,16 @@ Example:
 await sendLinkMcpMessage('https://www.example.com/snowboarding/')
 
 // Call an MCP tool from within the iframe
-await sendMcpMessage(
-	'tool',
-	{
-		toolName: 'generate_haiku',
-		params: { theme: 'quantum computing', mood: 'playful' },
-	},
-	{ signal: unmountSignal },
-)
+await sendMcpMessage('tool', {
+	toolName: 'generate_haiku',
+	params: { theme: 'quantum computing', mood: 'playful' },
+})
 
 // Send a prompt to the AI assistant
-await sendMcpMessage(
-	'prompt',
-	{
-		prompt:
-			'Create a recipe for a fusion dish combining Japanese and Mexican cuisine',
-	},
-	{ signal: unmountSignal },
-)
+await sendMcpMessage('prompt', {
+	prompt:
+		'Create a recipe for a fusion dish combining Japanese and Mexican cuisine',
+})
 ```
 
 <callout-info>
@@ -99,7 +91,6 @@ In this exercise, you'll implement interactive communication in your iframe-base
 - Send `tool` messages to execute MCP tools from within the iframe
 - Send `prompt` messages to interact with AI assistants
 - Handle asynchronous responses and errors properly
-- Implement proper cleanup with AbortSignal
 
 The key difference from previous exercises is that instead of just displaying data, your iframe now actively communicates with the host application to trigger actions, making it a truly interactive component that integrates seamlessly with the broader application ecosystem.
 
