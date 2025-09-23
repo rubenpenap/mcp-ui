@@ -7,7 +7,7 @@ import { initializePrompts } from './prompts.ts'
 import { initializeResources } from './resources.ts'
 import { initializeTools } from './tools.ts'
 
-type Props = { baseUrl: string }
+export type Props = { baseUrl: string }
 type State = {}
 
 export class EpicMeMCP extends McpAgent<Env, State, Props> {
@@ -49,20 +49,3 @@ You can also help users add tags to their entries and get all tags for an entry.
 		return baseUrl
 	}
 }
-
-export default {
-	fetch: async (request, env, ctx) => {
-		const url = new URL(request.url)
-
-		if (url.pathname === '/mcp') {
-			ctx.props.baseUrl = url.origin
-
-			const mcp = EpicMeMCP.serve('/mcp', {
-				binding: 'EPIC_ME_MCP_OBJECT',
-			})
-			return mcp.fetch(request, env, ctx)
-		}
-
-		return new Response('Not found', { status: 404 })
-	},
-} satisfies ExportedHandler<Env>

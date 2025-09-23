@@ -1,6 +1,10 @@
 import { createRequestHandler } from 'react-router'
 import { db } from './db.ts'
-import { EpicMeMCP } from './mcp/index.ts'
+import {
+	EpicMeMCP,
+	// 💰 you'll need this:
+	// type Props as McpProps,
+} from './mcp/index.ts'
 
 const requestHandler = createRequestHandler(
 	() => import('virtual:react-router/server-build'),
@@ -8,7 +12,9 @@ const requestHandler = createRequestHandler(
 )
 
 export default {
-	fetch: async (request, env, ctx) => {
+	// 🐨 add McpProps to the execution context:
+	// 💰 ctx: ExecutionContext<McpProps>
+	fetch: async (request: Request, env: Env, ctx: ExecutionContext) => {
 		const url = new URL(request.url)
 
 		if (url.pathname === '/mcp') {
@@ -24,6 +30,6 @@ export default {
 			cloudflare: { env, ctx },
 		})
 	},
-} satisfies ExportedHandler<Env>
+}
 
 export { EpicMeMCP }

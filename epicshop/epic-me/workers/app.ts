@@ -16,6 +16,6 @@ const defaultHandler = {
 			cloudflare: { env, ctx },
 		})
 	},
-} satisfies ExportedHandler<Env>
+}
 
 export default defaultHandler

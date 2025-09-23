@@ -16,7 +16,7 @@ export function useMcpUiInit() {
 
 // 🐨 export a function called sendLinkMcpMessage that takes a url string and returns a promise
 // 🐨 it should:
-// - generate a random UUID for the message id
+// - generate a random UUID for the message id (💰 you can use crypto.randomUUID())
 // - return a new Promise((resolve, reject) = {
 //	 - call window.parent.postMessage with the type 'link', the message id, and the payload { url } and targetOrigin '*'
 //	 - set up a function to handle the event (MessageEvent) from the parent window

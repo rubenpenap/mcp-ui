@@ -1,6 +1,6 @@
 import { createRequestHandler } from 'react-router'
 import { db } from './db.ts'
-import { EpicMeMCP } from './mcp/index.ts'
+import { EpicMeMCP, type Props as McpProps } from './mcp/index.ts'
 
 const requestHandler = createRequestHandler(
 	() => import('virtual:react-router/server-build'),
@@ -8,11 +8,16 @@ const requestHandler = createRequestHandler(
 )
 
 export default {
-	fetch: async (request, env, ctx) => {
+	fetch: async (
+		request: Request,
+		env: Env,
+		ctx: ExecutionContext<McpProps>,
+	) => {
 		const url = new URL(request.url)
 
 		if (url.pathname === '/mcp') {
 			ctx.props.baseUrl = url.origin
+
 			return EpicMeMCP.serve('/mcp', {
 				binding: 'EPIC_ME_MCP_OBJECT',
 			}).fetch(request, env, ctx)
@@ -23,6 +28,6 @@ export default {
 			cloudflare: { env, ctx },
 		})
 	},
-} satisfies ExportedHandler<Env>
+}
 
 export { EpicMeMCP }
