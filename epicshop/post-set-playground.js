@@ -3,10 +3,9 @@
 import path from 'path'
 import fs from 'fs-extra'
 
-const wranglerPath = path.join(
-	process.env.EPICSHOP_PLAYGROUND_DEST_DIR,
-	'wrangler.jsonc',
-)
+const playgroundDestDir = process.env.EPICSHOP_PLAYGROUND_DEST_DIR
+const wranglerPath = path.join(playgroundDestDir, 'wrangler.jsonc')
+const wranglerDir = path.join(playgroundDestDir, '.wrangler')
 
 if (await fs.pathExists(wranglerPath)) {
 	try {
@@ -22,3 +21,6 @@ if (await fs.pathExists(wranglerPath)) {
 		console.error('❌ Error fixing wrangler.jsonc:', error.message)
 	}
 }
+
+// Delete the .wrangler directory in the playground destination directory
+await fs.remove(wranglerDir).catch(() => {})

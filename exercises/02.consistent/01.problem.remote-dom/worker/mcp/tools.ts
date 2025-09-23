@@ -478,7 +478,9 @@ function createTagResourceLink(tag: {
 
 async function elicitConfirmation(agent: EpicMeMCP, message: string) {
 	const capabilities = agent.server.server.getClientCapabilities()
-	if (!capabilities?.elicitation) {
+	// https://github.com/modelcontextprotocol/typescript-sdk/issues/689
+	const cloudflareSupportsElicitation = false
+	if (!capabilities?.elicitation || !cloudflareSupportsElicitation) {
 		return true
 	}
 

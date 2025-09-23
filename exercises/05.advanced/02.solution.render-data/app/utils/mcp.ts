@@ -100,16 +100,10 @@ export function waitForRenderData<RenderData>(
 	schema: z.ZodSchema<RenderData>,
 ): Promise<RenderData> {
 	return new Promise((resolve, reject) => {
-		const messageId = crypto.randomUUID()
-
-		window.parent.postMessage(
-			{ type: 'ui-request-render-data', messageId },
-			'*',
-		)
+		window.parent.postMessage({ type: 'ui-lifecycle-iframe-ready' }, '*')
 
 		function handleMessage(event: MessageEvent) {
 			if (event.data?.type !== 'ui-lifecycle-iframe-render-data') return
-			if (event.data.messageId !== messageId) return
 			window.removeEventListener('message', handleMessage)
 
 			const { renderData, error } = event.data.payload
