@@ -1,4 +1,4 @@
-import { useState, useTransition } from 'react'
+import { useState, useTransition, useRef } from 'react'
 import {
 	ErrorBoundary,
 	useErrorBoundary,
@@ -19,15 +19,18 @@ export default function JournalViewer({ loaderData }: Route.ComponentProps) {
 	const [deletedEntryIds, setDeletedEntryIds] = useState<Set<number>>(
 		() => new Set([]),
 	)
-
-	useMcpUiInit()
+	const rootRef = useRef<HTMLDivElement>(null)
+	useMcpUiInit(rootRef)
 
 	const handleEntryDeleted = (entryId: number) => {
 		setDeletedEntryIds((prev) => new Set([...prev, entryId]))
 	}
 
 	return (
-		<div className="bg-background max-h-[800px] overflow-y-auto p-4">
+		<div
+			ref={rootRef}
+			className="bg-background max-h-[800px] overflow-y-auto p-4"
+		>
 			<div className="mx-auto max-w-4xl">
 				<div className="bg-card mb-6 rounded-xl border p-6 shadow-lg">
 					<h1 className="text-foreground mb-2 text-3xl font-bold">

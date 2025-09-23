@@ -82,7 +82,7 @@ export async function initializeTools(agent: EpicMeMCP) {
 							iframeUrl: iframeUrl.toString(),
 						},
 						encoding: 'text',
-						// 🐨 add uiMetadata with the key 'preferred-frame-size' with a width of 800px and a height of 600px
+						// 🐨 add uiMetadata with the key 'preferred-frame-size' with a width of 600px and a height of 800px
 					}),
 				],
 			}

@@ -1,4 +1,10 @@
-import { useEffect, useState, useTransition } from 'react'
+import {
+	useEffect,
+	useState,
+	useTransition,
+	// 💰 you'll need this:
+	useRef,
+} from 'react'
 import {
 	ErrorBoundary,
 	useErrorBoundary,
@@ -17,12 +23,19 @@ export default function JournalViewer({ loaderData }: Route.ComponentProps) {
 	const [deletedEntryIds, setDeletedEntryIds] = useState<Set<number>>(
 		() => new Set([]),
 	)
+	// 🐨 create a ref for the root element of this component
+	// 💰 (this isn't a react workshop, here's how you do that):
+	// const rootRef = useRef<HTMLDivElement>(null)
 
 	useEffect(() => {
 		window.parent.postMessage({ type: 'ui-lifecycle-iframe-ready' }, '*')
 
-		// 🐨 get the height of the document.documentElement
-		// 🐨 get the width of the document.documentElement
+		// 🐨 get the root element
+		// 💰 const root = rootRef.current
+		// 🐨 if the root is null, return
+		// 🐨 get the height and width of the root
+		// 💰 const height = root.scrollHeight
+		// 💰 const width = root.scrollWidth
 		// 🐨 call window.parent.postMessage with the type 'ui-size-change' and the payload { height, width }
 		// 🐨 set the targetOrigin to '*'
 	}, [])
@@ -32,7 +45,11 @@ export default function JournalViewer({ loaderData }: Route.ComponentProps) {
 	}
 
 	return (
-		<div className="bg-background max-h-[800px] overflow-y-auto p-4">
+		<div
+			// 🐨 add the ref to the div
+			// 💰 ref={rootRef}
+			className="bg-background max-h-[800px] overflow-y-auto p-4"
+		>
 			<div className="mx-auto max-w-4xl">
 				<div className="bg-card mb-6 rounded-xl border p-6 shadow-lg">
 					<h1 className="text-foreground mb-2 text-3xl font-bold">

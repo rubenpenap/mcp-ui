@@ -1,4 +1,4 @@
-import { useState, useTransition } from 'react'
+import { useState, useTransition, useRef } from 'react'
 import {
 	ErrorBoundary,
 	useErrorBoundary,
@@ -68,12 +68,16 @@ export default function EntryViewerContent({
 }: Route.ComponentProps) {
 	const { entry } = loaderData
 	const [isDeleted, setIsDeleted] = useState(false)
+	const rootRef = useRef<HTMLDivElement>(null)
 
-	useMcpUiInit()
+	useMcpUiInit(rootRef)
 
 	if (isDeleted) {
 		return (
-			<div className="bg-background max-h-[800px] overflow-y-auto p-4">
+			<div
+				ref={rootRef}
+				className="bg-background max-h-[800px] overflow-y-auto p-4"
+			>
 				<div className="mx-auto max-w-4xl">
 					<div className="bg-card mb-6 rounded-xl border p-6 shadow-lg">
 						<h1 className="text-foreground text-3xl font-bold">
@@ -89,7 +93,10 @@ export default function EntryViewerContent({
 	}
 
 	return (
-		<div className="bg-background max-h-[800px] overflow-y-auto p-4">
+		<div
+			ref={rootRef}
+			className="bg-background max-h-[800px] overflow-y-auto p-4"
+		>
 			<div className="mx-auto max-w-4xl">
 				<div className="bg-card mb-6 rounded-xl border p-6 shadow-lg">
 					<div className="mb-4 flex items-center justify-between">

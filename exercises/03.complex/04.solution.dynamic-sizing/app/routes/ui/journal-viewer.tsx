@@ -1,4 +1,4 @@
-import { useEffect, useState, useTransition } from 'react'
+import { useEffect, useState, useTransition, useRef } from 'react'
 import {
 	ErrorBoundary,
 	useErrorBoundary,
@@ -17,12 +17,16 @@ export default function JournalViewer({ loaderData }: Route.ComponentProps) {
 	const [deletedEntryIds, setDeletedEntryIds] = useState<Set<number>>(
 		() => new Set([]),
 	)
+	const rootRef = useRef<HTMLDivElement>(null)
 
 	useEffect(() => {
 		window.parent.postMessage({ type: 'ui-lifecycle-iframe-ready' }, '*')
 
-		const height = document.documentElement.scrollHeight
-		const width = document.documentElement.scrollWidth
+		const root = rootRef.current
+		if (!root) return
+
+		const height = root.scrollHeight
+		const width = root.scrollWidth
 
 		window.parent.postMessage(
 			{ type: 'ui-size-change', payload: { height, width } },
@@ -35,7 +39,10 @@ export default function JournalViewer({ loaderData }: Route.ComponentProps) {
 	}
 
 	return (
-		<div className="bg-background max-h-[800px] overflow-y-auto p-4">
+		<div
+			ref={rootRef}
+			className="bg-background max-h-[800px] overflow-y-auto p-4"
+		>
 			<div className="mx-auto max-w-4xl">
 				<div className="bg-card mb-6 rounded-xl border p-6 shadow-lg">
 					<h1 className="text-foreground mb-2 text-3xl font-bold">

@@ -83,7 +83,7 @@ export async function initializeTools(agent: EpicMeMCP) {
 						},
 						encoding: 'text',
 						uiMetadata: {
-							'preferred-frame-size': ['800px', '600px'],
+							'preferred-frame-size': ['600px', '800px'],
 						},
 					}),
 				],

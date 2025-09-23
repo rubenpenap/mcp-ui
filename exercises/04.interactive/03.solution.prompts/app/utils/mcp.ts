@@ -1,18 +1,19 @@
 import { useEffect } from 'react'
 import { type z } from 'zod'
 
-export function useMcpUiInit() {
+export function useMcpUiInit(rootRef: React.RefObject<HTMLDivElement | null>) {
 	useEffect(() => {
 		window.parent.postMessage({ type: 'ui-lifecycle-iframe-ready' }, '*')
+		if (!rootRef.current) return
 
-		const height = document.documentElement.scrollHeight
-		const width = document.documentElement.scrollWidth
+		const height = rootRef.current.scrollHeight
+		const width = rootRef.current.scrollWidth
 
 		window.parent.postMessage(
 			{ type: 'ui-size-change', payload: { height, width } },
 			'*',
 		)
-	}, [])
+	}, [rootRef])
 }
 
 type MessageOptions = { schema?: z.ZodSchema }
