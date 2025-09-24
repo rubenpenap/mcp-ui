@@ -8,16 +8,26 @@
       "EpicMeApp": "npm run dev --silent --prefix ./epicshop/epic-me -- --clearScreen=false --logLevel=error --strictPort"
     },
     "githubRepo": "https://github.com/epicweb-dev/mcp-ui",
-    "subdomain": "mcp-ui",
     "instructor": {
-      "name": "Some instructor",
+      "name": "Kent C. Dodds",
       "avatar": "/images/instructor.png",
-      "𝕏": "your_x_handle_here"
+      "𝕏": "kentcdodds"
+    },
+    "stackBlitzConfig": {
+      "view": "editor",
+      "terminalHeight": "0",
+      "hidedevtools": "1",
+      "hideNavigation": "1"
     },
     "product": {
-      "host": "www.epicweb.dev",
-      "displayName": "EpicWeb.dev",
-      "displayNameShort": "Epic Web"
+      "host": "www.epicai.pro",
+      "displayName": "EpicAI.pro",
+      "displayNameShort": "Epic AI",
+      "discordChannelId": "1409600723716411494",
+      "discordTags": [
+        "1409601169801871410",
+        "1409601409355092039"
+      ]
     }
   },
   "type": "module",
