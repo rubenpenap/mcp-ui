@@ -30,7 +30,10 @@ export default function JournalViewer({ loaderData }: Route.ComponentProps) {
 	}
 
 	return (
-		<div className="bg-background max-h-[800px] overflow-y-auto p-4">
+		<div
+			ref={rootRef}
+			className="bg-background max-h-[800px] overflow-y-auto p-4"
+		>
 			<div className="mx-auto max-w-4xl">
 				<div className="bg-card mb-6 rounded-xl border p-6 shadow-lg">
 					<h1 className="text-foreground mb-2 text-3xl font-bold">

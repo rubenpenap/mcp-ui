@@ -25,8 +25,8 @@ export default function JournalViewer({ loaderData }: Route.ComponentProps) {
 		const root = rootRef.current
 		if (!root) return
 
-		const height = root.scrollHeight
-		const width = root.scrollWidth
+		const height = root.clientHeight
+		const width = root.clientWidth
 
 		window.parent.postMessage(
 			{ type: 'ui-size-change', payload: { height, width } },

@@ -460,7 +460,7 @@ export async function initializeTools(agent: EpicMeMCP) {
 		},
 		async ({ id }) => {
 			const iframeUrl = new URL(
-				'/ui/entry-viewer/${id}',
+				`/ui/entry-viewer/${id}`,
 				agent.requireBaseUrl(),
 			)
 

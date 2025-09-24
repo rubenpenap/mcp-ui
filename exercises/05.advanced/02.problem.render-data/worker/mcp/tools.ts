@@ -461,7 +461,7 @@ export async function initializeTools(agent: EpicMeMCP) {
 		async ({ id }) => {
 			// 🐨 get rid of the ${id} here:
 			const iframeUrl = new URL(
-				'/ui/entry-viewer/${id}',
+				`/ui/entry-viewer/${id}`,
 				agent.requireBaseUrl(),
 			)
 			// 🐨 get the entry from the database and make sure it exists (use invariant)

@@ -3,8 +3,8 @@
 👨‍💼 Users expect iframes to fit their content perfectly, not waste space or require scrolling. The journal viewer should automatically adjust to show exactly what's needed.
 
 ```tsx
-const height = document.documentElement.scrollHeight
-const width = document.documentElement.scrollWidth
+const height = document.documentElement.clientHeight
+const width = document.documentElement.clientWidth
 
 window.parent.postMessage(
 	{
@@ -15,7 +15,7 @@ window.parent.postMessage(
 )
 ```
 
-Use `scrollHeight` and `scrollWidth` to measure the full content dimensions, then send a `ui-size-change` message to the parent window so it can resize the iframe accordingly.
+Use `clientHeight` and `clientWidth` to measure the full content dimensions, then send a `ui-size-change` message to the parent window so it can resize the iframe accordingly.
 
 The static `preferred-frame-size` from the previous exercise works for fixed layouts, but journal entries have varying content lengths. A short entry wastes space, while a long entry gets cut off.
 

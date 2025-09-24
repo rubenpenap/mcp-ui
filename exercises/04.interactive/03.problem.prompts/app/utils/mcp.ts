@@ -6,8 +6,8 @@ export function useMcpUiInit(rootRef: React.RefObject<HTMLDivElement | null>) {
 		window.parent.postMessage({ type: 'ui-lifecycle-iframe-ready' }, '*')
 		if (!rootRef.current) return
 
-		const height = rootRef.current.scrollHeight
-		const width = rootRef.current.scrollWidth
+		const height = rootRef.current.clientHeight
+		const width = rootRef.current.clientWidth
 
 		window.parent.postMessage(
 			{ type: 'ui-size-change', payload: { height, width } },

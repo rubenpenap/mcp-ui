@@ -34,8 +34,8 @@ export default function JournalViewer({ loaderData }: Route.ComponentProps) {
 		// 💰 const root = rootRef.current
 		// 🐨 if the root is null, return
 		// 🐨 get the height and width of the root
-		// 💰 const height = root.scrollHeight
-		// 💰 const width = root.scrollWidth
+		// 💰 const height = root.clientHeight
+		// 💰 const width = root.clientWidth
 		// 🐨 call window.parent.postMessage with the type 'ui-size-change' and the payload { height, width }
 		// 🐨 set the targetOrigin to '*'
 	}, [])

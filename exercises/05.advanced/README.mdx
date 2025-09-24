@@ -2,6 +2,34 @@
 
 We're going to cover two advanced features of MCP UI that make it more powerful.
 
+```mermaid
+sequenceDiagram
+    participant User
+    participant Iframe
+    participant App
+    participant MCP as MCP Server
+
+    Note over User,MCP: Tool Results Flow
+    User->>Iframe: Interact with UI (e.g., delete entry)
+    Iframe->>App: Send tool message via postMessage
+    App->>MCP: Call tool with structured output schema
+    MCP->>MCP: Process request
+    MCP->>App: Return structured result (success/failure)
+    App->>Iframe: Send result via postMessage
+    Iframe->>Iframe: Validate with Zod schema
+    Iframe->>User: Update UI based on result
+
+    Note over User,MCP: Render Data Flow
+    User->>App: Request UI resource
+    App->>MCP: Get UI resource with initial data
+    MCP->>App: Return resource with uiMetadata containing render data
+    App->>Iframe: Create iframe with resource
+    Iframe->>App: Emit ui-lifecycle-iframe-ready event
+    App->>Iframe: Send ui-lifecycle-iframe-render-data event
+    Iframe->>Iframe: Process initial data
+    Iframe->>User: Display content with pre-loaded data
+```
+
 ## Tool Results
 
 When we call tools, we get the result of the tool call and because we have structured content, we can use it programmatically. This enables rich integrations where the client can understand and act on tool results.
