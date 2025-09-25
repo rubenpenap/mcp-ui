@@ -15,7 +15,7 @@
   "dependencies": {
     "@epic-web/invariant": "^1.0.0",
     "@mcp-ui/server": "^5.11.0",
-    "@modelcontextprotocol/sdk": "^1.18.1",
+    "@modelcontextprotocol/sdk": "^1.18.2",
     "agents": "^0.2.0",
     "zod": "^3.25.67"
   },
@@ -31,7 +31,7 @@
     "prettier": "^3.6.2",
     "typescript": "^5.9.2",
     "vitest": "^3.2.4",
-    "wrangler": "^4.38.0"
+    "wrangler": "^4.40.1"
   },
   "prettier": "@epic-web/config/prettier",
   "license": "GPL-3.0-only"
