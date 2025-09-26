@@ -130,18 +130,14 @@ export default async function setup(project: TestProject) {
 
 		// Start the MCP server from the exercise directory
 		console.log(`Starting MCP server on port ${mcpServerPort}...`)
-		mcpServerProcess = execa(
-			'npx',
-			['wrangler', 'dev', '--port', mcpServerPort.toString()],
-			{
-				cwd: process.cwd(),
-				stdio: ['ignore', 'pipe', 'pipe'],
-				env: {
-					...process.env,
-					PORT: mcpServerPort.toString(),
-				},
+		mcpServerProcess = execa('npm', ['run', 'dev:server', '--silent'], {
+			cwd: process.cwd(),
+			stdio: ['ignore', 'pipe', 'pipe'],
+			env: {
+				...process.env,
+				PORT: mcpServerPort.toString(),
 			},
-		)
+		})
 
 		try {
 			// Wait for both servers to be ready simultaneously
@@ -161,7 +157,9 @@ export default async function setup(project: TestProject) {
 					textMatch: mcpServerPort.toString(),
 					name: '[MCP-SERVER]',
 					outputBuffer: mcpServerOutput,
-				}),
+				}).then(() =>
+					waitForResourceReady(`http://localhost:${mcpServerPort}/healthcheck`),
+				),
 			])
 
 			console.log('Servers started successfully')

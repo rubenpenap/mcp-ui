@@ -10,6 +10,10 @@ export default {
 			}).fetch(request, env, ctx)
 		}
 
+		if (url.pathname === '/healthcheck') {
+			return new Response('OK', { status: 200 })
+		}
+
 		return new Response('Not found', { status: 404 })
 	},
 }

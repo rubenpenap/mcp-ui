@@ -206,7 +206,9 @@ async function startServers() {
 			process: devServer,
 			textMatch: mcpServerPort.toString(),
 			name: '[DEV-SERVER]',
-		}),
+		}).then(() =>
+			waitForResourceReady(`http://localhost:${mcpServerPort}/healthcheck`),
+		),
 		waitForServerReady({
 			process: inspector,
 			textMatch: inspectorClientPort.toString(),
@@ -360,3 +362,41 @@ async function main() {
 }
 
 main()
+
+function waitForResourceReady(resourceUrl) {
+	const timeoutSignal = AbortSignal.timeout(10_000)
+	let lastError = null
+	return new Promise((resolve, reject) => {
+		timeoutSignal.addEventListener('abort', () => {
+			const error = lastError ?? new Error('No other errors detected')
+			error.message = `Timed out waiting for ${resourceUrl}:\n Last Error:${error.message}`
+			reject(error)
+		})
+		async function checkResource() {
+			try {
+				const response = await fetch(resourceUrl)
+				if (response.ok) return resolve()
+			} catch (error) {
+				lastError = error instanceof Error ? error : new Error(String(error))
+			}
+			await sleep(100, timeoutSignal)
+			await checkResource()
+		}
+		return checkResource()
+	})
+}
+
+function sleep(ms, signal) {
+	return new Promise((resolve, reject) => {
+		const timeout = setTimeout(() => {
+			signal?.removeEventListener('abort', onAbort)
+			resolve()
+		}, ms)
+
+		function onAbort() {
+			clearTimeout(timeout)
+			reject(new Error('Sleep aborted'))
+		}
+		signal?.addEventListener('abort', onAbort)
+	})
+}
