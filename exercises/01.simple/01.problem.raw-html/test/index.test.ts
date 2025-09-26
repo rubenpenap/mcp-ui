@@ -1,4 +1,4 @@
-import { Client } from '@modelcontextprotocol/sdk/client/index.js'
+import { Client } from '@modelcontextprotocol/sdk/client'
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js'
 import { test, expect, inject } from 'vitest'
 
@@ -27,10 +27,15 @@ async function setupClient() {
 	}
 }
 
-test('listing tools works', async () => {
+test('get raw html', async () => {
 	await using setup = await setupClient()
 	const { client } = setup
 
-	const result = await client.listTools()
-	expect(result.tools.length).toBeGreaterThan(0)
+	const result = await client.callTool({
+		name: 'view_tag',
+		params: {
+			id: 1,
+		},
+	})
+	console.log(result)
 })
