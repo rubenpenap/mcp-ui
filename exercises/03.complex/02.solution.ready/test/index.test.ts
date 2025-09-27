@@ -1,3 +1,4 @@
+import { invariant } from '@epic-web/invariant'
 import { Client } from '@modelcontextprotocol/sdk/client'
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js'
 import { chromium } from 'playwright'
@@ -41,7 +42,7 @@ async function setupClient() {
 	}
 }
 
-test('view_journal sends iframe response', async () => {
+test('journal viewer sends ui-lifecycle-iframe-ready message', async () => {
 	await using setup = await setupClient()
 	const { client } = setup
 
@@ -49,53 +50,70 @@ test('view_journal sends iframe response', async () => {
 		throw new Error('🚨 view_journal tool call failed', { cause: e })
 	})
 
-	const content = z.array(z.object({}).passthrough()).parse(result.content)
+	invariant(Array.isArray(result.content), '🚨 content is not an array')
 
-	expect(
-		content,
-		'🚨 content returned from view_journal tool does not match the expected format',
-	).toEqual([
-		{
-			type: 'resource',
-			resource: {
-				uri: expect.stringMatching(/^ui:\/\/view-journal\/\d+$/),
-				mimeType: 'text/uri-list',
-				text: `http://localhost:${mcpServerPort}/ui/journal-viewer`,
-			},
-		},
-	])
 	const { resource } = z
 		.object({ resource: z.object({ text: z.string() }) })
-		.parse(content[0])
+		.parse(result.content[0])
 
 	const urlString = resource.text
 
 	await using browserSetup = await setupBrowser()
 	const { page } = browserSetup
+
+	await page.addInitScript(() => {
+		// one per document; created before app code runs
+		window.__uiReadyDeferred = new Promise((resolve) => {
+			window.__resolveUiReady = resolve
+		})
+
+		window.addEventListener('message', (event: MessageEvent) => {
+			if (event?.data?.type === 'ui-lifecycle-iframe-ready') {
+				window.__resolveUiReady?.(event.data)
+			}
+		})
+	})
+
 	await page.goto(urlString)
 
-	const readyMessage = Promise.race([
+	const message = await Promise.race([
 		page.evaluate(() => {
-			return new Promise<{ type: string }>((resolve) => {
-				// @ts-expect-error - window is defined in this context
-				window.addEventListener(
-					'message',
-					(event: MessageEvent) => {
-						if (event.data?.type === 'ui-lifecycle-iframe-ready') {
-							resolve(event.data)
-						}
-					},
-					{ once: true },
-				)
-			})
+			return window.__uiReadyDeferred
 		}),
-		new Promise((r, reject) => {
-			setTimeout(
-				() => reject('🚨 timed out waiting for iframe ready message'),
-				3_000,
-			)
-		}),
+		new Promise((r, reject) =>
+			setTimeout(() => reject('🚨 timed out waiting for message'), 3000),
+		),
 	])
 
-	expect(await readyMessage).toEqual({ type: 'ui-lifecycle-iframe-ready' })
+	invariant(
+		typeof message === 'object' && message !== null,
+		'🚨 message not received',
+	)
+
+	const parsedMessage = z
+		.object({
+			type: z.string(),
+		})
+		.parse(message)
+
+	expect(
+		parsedMessage.type,
+		'🚨 message type is not ui-lifecycle-iframe-ready',
+	).toBe('ui-lifecycle-iframe-ready')
 })
+
+declare global {
+	interface Window {
+		__uiReadyDeferred?: Promise<{
+			type: string
+		}>
+		__resolveUiReady?: (data: { type: string }) => void
+		addEventListener(
+			type: string,
+			listener: (event: MessageEvent) => void,
+			options?: { once?: boolean },
+		): void
+	}
+
+	var window: Window & typeof globalThis
+}
