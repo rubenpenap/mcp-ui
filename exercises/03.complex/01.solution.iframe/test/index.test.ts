@@ -1,6 +1,7 @@
-import { Client } from '@modelcontextprotocol/sdk/client/index.js'
+import { Client } from '@modelcontextprotocol/sdk/client'
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js'
 import { test, expect, inject } from 'vitest'
+import { z } from 'zod'
 
 const mcpServerPort = inject('mcpServerPort')
 
@@ -27,10 +28,27 @@ async function setupClient() {
 	}
 }
 
-test('listing tools works', async () => {
+test('view_journal sends iframe response', async () => {
 	await using setup = await setupClient()
 	const { client } = setup
 
-	const result = await client.listTools()
-	expect(result.tools.length).toBeGreaterThan(0)
+	const result = await client.callTool({ name: 'view_journal' }).catch((e) => {
+		throw new Error('🚨 view_journal tool call failed', { cause: e })
+	})
+
+	const content = z.array(z.unknown()).parse(result.content)
+
+	expect(
+		content,
+		'🚨 content returned from view_journal tool does not match the expected format',
+	).toEqual([
+		{
+			type: 'resource',
+			resource: {
+				uri: expect.stringMatching(/^ui:\/\/view-journal\/\d+$/),
+				mimeType: 'text/uri-list',
+				text: `http://localhost:${mcpServerPort}/ui/journal-viewer`,
+			},
+		},
+	])
 })
