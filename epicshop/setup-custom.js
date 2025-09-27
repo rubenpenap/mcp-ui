@@ -5,12 +5,28 @@ import {
 	isProblemApp,
 	setPlayground,
 } from '@epic-web/workshop-utils/apps.server'
+import { $ } from 'execa'
 import fsExtra from 'fs-extra'
 
 await warm()
 
 const allApps = await getApps()
 const problemApps = allApps.filter(isProblemApp)
+
+if (!process.env.SKIP_PLAYWRIGHT) {
+	console.log(
+		'🎭 installing playwright for testing... This may require sudo (or admin) privileges and may ask for your password.',
+	)
+	try {
+		await $({
+			all: true,
+		})`npx playwright install chromium --with-deps`
+		console.log('✅ playwright installed')
+	} catch (playwrightErrorResult) {
+		console.log(playwrightErrorResult.all)
+		throw new Error('❌  playwright install failed')
+	}
+}
 
 if (!process.env.SKIP_PLAYGROUND) {
 	const firstProblemApp = problemApps[0]

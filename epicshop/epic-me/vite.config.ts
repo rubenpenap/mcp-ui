@@ -24,7 +24,7 @@ export default defineConfig({
 				if (id.includes('+types/')) return 'export {}'
 			},
 		},
-		cloudflare({ viteEnvironment: { name: 'ssr' } }),
+		cloudflare({ viteEnvironment: { name: 'ssr' }, inspectorPort: false }),
 		tailwindcss(),
 		reactRouter(),
 		tsconfigPaths(),
