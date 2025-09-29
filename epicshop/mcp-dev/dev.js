@@ -132,7 +132,7 @@ async function waitForServerReady({ process: childProcess, textMatch, name }) {
 		}
 
 		const timeout = setTimeout(() => {
-			process.kill()
+			childProcess.kill()
 			printAndReject(new Error(`${name} failed to start within 10 seconds`))
 		}, 10_000)
 
