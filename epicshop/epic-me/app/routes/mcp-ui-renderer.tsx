@@ -4,7 +4,7 @@ import {
 	type UIActionResult,
 	isUIResource,
 } from '@mcp-ui/client'
-import { useState, useRef, useEffect, useCallback } from 'react'
+import { useState, useRef, useEffect, useCallback, type RefObject } from 'react'
 import { Form, isRouteErrorResponse } from 'react-router'
 import { type Route } from './+types/mcp-ui-renderer'
 
@@ -83,7 +83,7 @@ export default function MCPRenderer({ loaderData }: Route.ComponentProps) {
 	const [messages, setMessages] = useState<
 		Array<{
 			id: string
-			type: 'sent' | 'received' | 'response'
+			type: 'sent' | 'received' | 'response' | 'internal'
 			content: string
 			timestamp: Date
 			messageId?: string
@@ -103,6 +103,7 @@ export default function MCPRenderer({ loaderData }: Route.ComponentProps) {
 		>
 	>(new Map())
 	const messageInputRef = useRef<HTMLTextAreaElement>(null)
+	const iframeRef = useRef<HTMLIFrameElement>(null)
 	const [isErrorResponse, setIsErrorResponse] = useState<boolean>(false)
 
 	// Auto-scroll when new messages are added and user is at bottom
@@ -112,8 +113,49 @@ export default function MCPRenderer({ loaderData }: Route.ComponentProps) {
 		}
 	}, [messages, isAtBottom, scrollToBottom])
 
+	// Listen to all iframe messages
+	useEffect(() => {
+		const handleMessage = (event: MessageEvent) => {
+			// Only handle messages from our iframe
+			if (
+				iframeRef.current &&
+				event.source === iframeRef.current.contentWindow
+			) {
+				try {
+					const messageData =
+						typeof event.data === 'string' ? JSON.parse(event.data) : event.data
+
+					// Check if this is a UI action message that would be handled by onUIAction
+					const isUIActionMessage =
+						messageData &&
+						typeof messageData === 'object' &&
+						messageData.type &&
+						['tool', 'prompt', 'link', 'intent', 'notify'].includes(
+							messageData.type,
+						)
+
+					// If it's not a UI action message, or if it's a different type of message, display it as internal
+					if (!isUIActionMessage) {
+						const messageContent = JSON.stringify(messageData, null, 2)
+						addMessage('internal', messageContent, messageData.messageId)
+					}
+				} catch {
+					// If we can't parse the message, still display it as internal
+					const messageContent =
+						typeof event.data === 'string'
+							? event.data
+							: JSON.stringify(event.data, null, 2)
+					addMessage('internal', messageContent)
+				}
+			}
+		}
+
+		window.addEventListener('message', handleMessage)
+		return () => window.removeEventListener('message', handleMessage)
+	}, [])
+
 	const addMessage = (
-		type: 'sent' | 'received' | 'response',
+		type: 'sent' | 'received' | 'response' | 'internal',
 		content: string,
 		messageId?: string,
 		respondsTo?: string,
@@ -138,7 +180,6 @@ export default function MCPRenderer({ loaderData }: Route.ComponentProps) {
 		const messageId = 'messageId' in result ? result.messageId : undefined
 
 		const fullResult = JSON.stringify(result, null, 2)
-		console.log('Full UIActionResult:', fullResult)
 		addMessage('received', fullResult, messageId)
 
 		// Return a promise that will be resolved when user submits response
@@ -160,11 +201,18 @@ export default function MCPRenderer({ loaderData }: Route.ComponentProps) {
 			selectedMessageId &&
 			pendingPromisesRef.current.has(selectedMessageId)
 		) {
-			const promise = pendingPromisesRef.current.get(selectedMessageId)!
+			const promise = pendingPromisesRef.current.get(selectedMessageId)
+			if (!promise) return
+
 			if (isErrorResponse) {
 				promise.reject(message)
 			} else {
-				promise.resolve(message)
+				try {
+					const parsed = JSON.parse(message)
+					promise.resolve(parsed)
+				} catch {
+					promise.resolve(message)
+				}
 			}
 			pendingPromisesRef.current.delete(selectedMessageId)
 		}
@@ -226,10 +274,10 @@ export default function MCPRenderer({ loaderData }: Route.ComponentProps) {
 												border: 'none',
 												borderRadius: '0.5rem',
 											},
-											iframeRenderData: {
-												theme: 'light',
-												userId: 'demo-user',
+											iframeProps: {
+												ref: iframeRef as RefObject<HTMLIFrameElement>,
 											},
+											autoResizeIframe: true,
 										}}
 									/>
 								</div>
@@ -254,7 +302,7 @@ export default function MCPRenderer({ loaderData }: Route.ComponentProps) {
 							</div>
 
 							{/* Messages Area */}
-							<div className="flex max-h-[680px] flex-1 flex-col">
+							<div className="flex flex-1 flex-col">
 								<div className="flex-1 space-y-3 overflow-x-hidden overflow-y-auto p-4">
 									{messages.length === 0 ? (
 										<div className="flex h-full items-center justify-center">
@@ -278,7 +326,9 @@ export default function MCPRenderer({ loaderData }: Route.ComponentProps) {
 															? 'bg-blue-600 text-white'
 															: message.type === 'received'
 																? 'bg-gray-100 text-gray-900 dark:bg-gray-700 dark:text-gray-100'
-																: 'bg-yellow-100 text-yellow-900 dark:bg-yellow-900/20 dark:text-yellow-100'
+																: message.type === 'internal'
+																	? 'bg-purple-100 text-purple-900 dark:bg-purple-900/20 dark:text-purple-100'
+																	: 'bg-yellow-100 text-yellow-900 dark:bg-yellow-900/20 dark:text-yellow-100'
 													}`}
 												>
 													<div className="mb-1 flex items-center justify-between gap-1">
@@ -289,7 +339,9 @@ export default function MCPRenderer({ loaderData }: Route.ComponentProps) {
 																		? 'text-blue-100'
 																		: message.type === 'received'
 																			? 'text-gray-500 dark:text-gray-400'
-																			: 'text-yellow-600 dark:text-yellow-400'
+																			: message.type === 'internal'
+																				? 'text-purple-600 dark:text-purple-400'
+																				: 'text-yellow-600 dark:text-yellow-400'
 																}`}
 															>
 																<MessageTypeLabel
@@ -434,6 +486,7 @@ const ACTION_EMOJIS = {
 	link: '🔗',
 	intent: '🎯',
 	notify: '🔔',
+	internal: '📨',
 } as const
 
 function MessageTypeLabel({
@@ -464,6 +517,15 @@ function MessageTypeLabel({
 				</>
 			)
 		}
+	}
+
+	if (type === 'internal') {
+		return (
+			<>
+				📨 INTERNAL
+				{messageId && ` (${messageId.slice(0, 8)})`}
+			</>
+		)
 	}
 
 	return (
