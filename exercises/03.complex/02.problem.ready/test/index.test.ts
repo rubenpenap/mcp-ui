@@ -53,67 +53,24 @@ test('journal viewer sends ui-lifecycle-iframe-ready message', async () => {
 	invariant(Array.isArray(result.content), '🚨 content is not an array')
 
 	const { resource } = z
-		.object({ resource: z.object({ text: z.string() }) })
+		.object({ resource: z.object({}).passthrough() })
 		.parse(result.content[0])
 
-	const urlString = resource.text
+	const url = new URL('http://localhost:7787/mcp-ui-renderer')
+	url.searchParams.set('resourceData', JSON.stringify(resource))
 
 	await using browserSetup = await setupBrowser()
 	const { page } = browserSetup
 
-	await page.addInitScript(() => {
-		// one per document; created before app code runs
-		window.__uiReadyDeferred = new Promise((resolve) => {
-			window.__resolveUiReady = resolve
+	await page.goto(url.toString())
+	await page
+		.getByRole('log')
+		.getByText('ui-lifecycle-iframe-ready')
+		.waitFor({ timeout: 1000 })
+		.catch((e) => {
+			throw new Error(
+				'🚨 ui-lifecycle-iframe-ready was never received. Make sure to call postMessage with "ui-lifecycle-iframe-ready" with the target set to "*".',
+				{ cause: e },
+			)
 		})
-
-		window.addEventListener('message', (event: MessageEvent) => {
-			if (event?.data?.type === 'ui-lifecycle-iframe-ready') {
-				window.__resolveUiReady?.(event.data)
-			}
-		})
-	})
-
-	await page.goto(urlString)
-
-	const message = await Promise.race([
-		page.evaluate(() => {
-			return window.__uiReadyDeferred
-		}),
-		new Promise((r, reject) =>
-			setTimeout(() => reject('🚨 timed out waiting for message'), 3000),
-		),
-	])
-
-	invariant(
-		typeof message === 'object' && message !== null,
-		'🚨 message not received',
-	)
-
-	const parsedMessage = z
-		.object({
-			type: z.string(),
-		})
-		.parse(message)
-
-	expect(
-		parsedMessage.type,
-		'🚨 message type is not ui-lifecycle-iframe-ready',
-	).toBe('ui-lifecycle-iframe-ready')
 })
-
-declare global {
-	interface Window {
-		__uiReadyDeferred?: Promise<{
-			type: string
-		}>
-		__resolveUiReady?: (data: { type: string }) => void
-		addEventListener(
-			type: string,
-			listener: (event: MessageEvent) => void,
-			options?: { once?: boolean },
-		): void
-	}
-
-	var window: Window & typeof globalThis
-}

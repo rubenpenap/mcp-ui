@@ -14,3 +14,21 @@ body {
 		color-scheme: dark;
 	}
 }
+
+/* Focus styles for better accessibility */
+*:focus {
+	outline: 2px solid #3b82f6;
+	outline-offset: 2px;
+}
+
+*:focus:not(:focus-visible) {
+	outline: none;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+	:root {
+		--tw-ring-color: #000000;
+		--tw-ring-offset-color: #ffffff;
+	}
+}

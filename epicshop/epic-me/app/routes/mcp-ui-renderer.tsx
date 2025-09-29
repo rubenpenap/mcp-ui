@@ -18,7 +18,7 @@ export function meta({}: Route.MetaArgs) {
 	]
 }
 
-export async function loader({ request }: Route.LoaderArgs) {
+export async function clientLoader({ request }: Route.LoaderArgs) {
 	const url = new URL(request.url)
 	const resourceData = url.searchParams.get('resourceData')
 
@@ -36,8 +36,37 @@ export async function loader({ request }: Route.LoaderArgs) {
 	return { content }
 }
 
+export function HydrateFallback() {
+	return (
+		<div className="flex min-h-48 flex-col items-center justify-center py-12">
+			<svg
+				className="text-muted-foreground mb-4 h-8 w-8 animate-spin"
+				xmlns="http://www.w3.org/2000/svg"
+				fill="none"
+				viewBox="0 0 24 24"
+				aria-label="Loading"
+			>
+				<circle
+					className="opacity-25"
+					cx="12"
+					cy="12"
+					r="10"
+					stroke="currentColor"
+					strokeWidth="4"
+				/>
+				<path
+					className="opacity-75"
+					fill="currentColor"
+					d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+				/>
+			</svg>
+			<p className="text-muted-foreground text-lg">Waiting...</p>
+		</div>
+	)
+}
+
 function useAutoScroll() {
-	const messagesEndRef = useRef<HTMLDivElement>(null)
+	const messagesEndRef = useRef<HTMLLIElement>(null)
 	const [isAtBottom, setIsAtBottom] = useState(true)
 
 	const scrollToBottom = useCallback(() => {
@@ -134,8 +163,15 @@ export default function MCPRenderer({ loaderData }: Route.ComponentProps) {
 							messageData.type,
 						)
 
-					// If it's not a UI action message, or if it's a different type of message, display it as internal
-					if (!isUIActionMessage) {
+					// Check if this is a lifecycle message that should be handled internally by UIResourceRenderer
+					const isLifecycleMessage =
+						messageData &&
+						typeof messageData === 'object' &&
+						messageData.type &&
+						messageData.type.startsWith('ui-lifecycle-')
+
+					// If it's not a UI action message and not a lifecycle message, display it as internal
+					if (!isUIActionMessage && !isLifecycleMessage) {
 						const messageContent = JSON.stringify(messageData, null, 2)
 						addMessage('internal', messageContent, messageData.messageId)
 					}
@@ -234,20 +270,23 @@ export default function MCPRenderer({ loaderData }: Route.ComponentProps) {
 	return (
 		<div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-8 dark:from-gray-900 dark:to-gray-800">
 			<div className="mx-auto max-w-6xl">
-				<div className="mb-8 text-center">
+				<header className="mb-8 text-center">
 					<h1 className="mb-4 text-4xl font-bold text-gray-900 dark:text-white">
 						MCP-UI Resource Renderer
 					</h1>
 					<p className="text-lg text-gray-600 dark:text-gray-300">
 						Interactive resource rendering with messaging capabilities
 					</p>
-				</div>
+				</header>
 
 				<div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
 					{/* Resource Renderer */}
-					<div className="space-y-4">
+					<section className="space-y-4" aria-labelledby="resource-heading">
 						<div className="rounded-xl bg-white p-6 shadow-lg dark:bg-gray-800">
-							<h2 className="mb-4 text-xl font-semibold text-gray-900 dark:text-white">
+							<h2
+								id="resource-heading"
+								className="mb-4 text-xl font-semibold text-gray-900 dark:text-white"
+							>
 								Resource: {content.resource.uri}
 							</h2>
 							<div className="mb-4 rounded-lg border border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-700">
@@ -276,6 +315,8 @@ export default function MCPRenderer({ loaderData }: Route.ComponentProps) {
 											},
 											iframeProps: {
 												ref: iframeRef as RefObject<HTMLIFrameElement>,
+												title: `Resource content: ${content.resource.uri}`,
+												'aria-label': 'Interactive resource renderer',
 											},
 											autoResizeIframe: true,
 										}}
@@ -289,30 +330,38 @@ export default function MCPRenderer({ loaderData }: Route.ComponentProps) {
 								</div>
 							)}
 						</div>
-					</div>
+					</section>
 
 					{/* Chat Interface */}
-					<div className="flex flex-col">
+					<section className="flex flex-col" aria-labelledby="messages-heading">
 						<div className="flex flex-1 flex-col rounded-xl bg-white shadow-lg dark:bg-gray-800">
 							{/* Chat Header */}
 							<div className="border-b border-gray-200 p-4 dark:border-gray-700">
-								<h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+								<h2
+									id="messages-heading"
+									className="text-xl font-semibold text-gray-900 dark:text-white"
+								>
 									Messages ({messages.length})
 								</h2>
 							</div>
 
 							{/* Messages Area */}
 							<div className="flex flex-1 flex-col">
-								<div className="flex-1 space-y-3 overflow-x-hidden overflow-y-auto p-4">
-									{messages.length === 0 ? (
-										<div className="flex h-full items-center justify-center">
-											<p className="text-center text-gray-500 dark:text-gray-400">
-												No messages yet. Start a conversation!
-											</p>
-										</div>
-									) : (
-										messages.map((message) => (
-											<div
+								{messages.length === 0 ? (
+									<div className="flex flex-1 items-center justify-center p-4">
+										<p className="text-center text-gray-500 dark:text-gray-400">
+											No messages yet. Start a conversation!
+										</p>
+									</div>
+								) : (
+									<ul
+										className="flex-1 space-y-3 overflow-x-hidden overflow-y-auto p-4"
+										role="log"
+										aria-live="polite"
+										aria-label="Message history"
+									>
+										{messages.map((message) => (
+											<li
 												key={message.id}
 												className={`flex gap-1 ${
 													message.type === 'sent'
@@ -390,28 +439,38 @@ export default function MCPRenderer({ loaderData }: Route.ComponentProps) {
 														{message.content}
 													</div>
 												</div>
-											</div>
-										))
-									)}
-									{/* Scroll anchor for auto-scroll */}
-									<div ref={messagesEndRef} />
-								</div>
+											</li>
+										))}
+										{/* Scroll anchor for auto-scroll */}
+										<li ref={messagesEndRef} />
+									</ul>
+								)}
 
 								{/* Message Input Area */}
 								<div className="border-t border-gray-200 p-4 dark:border-gray-700">
 									{selectedMessageId && (
-										<div className="mb-3 rounded-md bg-orange-50 p-2 dark:bg-orange-900/20">
+										<div
+											className="mb-3 rounded-md bg-orange-50 p-2 dark:bg-orange-900/20"
+											role="status"
+											aria-live="polite"
+										>
 											<p className="text-xs text-orange-800 dark:text-orange-200">
 												Responding to message: {selectedMessageId.slice(0, 8)}
 											</p>
 										</div>
 									)}
 									<div className="flex gap-2">
+										<label htmlFor="message-input" className="sr-only">
+											Type your message
+										</label>
 										<textarea
+											id="message-input"
 											ref={messageInputRef}
 											placeholder="Type your message here..."
 											className={`flex-1 rounded-md border px-3 py-2 text-sm focus:ring-1 focus:outline-none dark:bg-gray-700 dark:text-white`}
 											rows={6}
+											aria-label="Message input"
+											aria-describedby="message-help"
 											onKeyDown={(e) => {
 												if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
 													e.preventDefault()
@@ -422,6 +481,7 @@ export default function MCPRenderer({ loaderData }: Route.ComponentProps) {
 										<button
 											onClick={sendMessage}
 											className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none dark:bg-blue-500 dark:hover:bg-blue-600 dark:focus:ring-blue-400"
+											aria-label="Send message"
 										>
 											Send
 										</button>
@@ -445,36 +505,49 @@ export default function MCPRenderer({ loaderData }: Route.ComponentProps) {
 											Clear
 										</button>
 									</div>
-									<div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+									<div
+										id="message-help"
+										className="mt-1 text-xs text-gray-500 dark:text-gray-400"
+									>
 										Press Cmd/Ctrl + Enter to send
 									</div>
 								</div>
 							</div>
 						</div>
-					</div>
+					</section>
 				</div>
 
 				{/* Edit contentData JSON in URL */}
-				<Form
-					method="GET"
-					className="mt-8 rounded-xl border border-gray-200 bg-white p-6 shadow-lg dark:border-gray-700 dark:bg-gray-800"
-				>
-					<h2 className="mb-4 text-xl font-semibold text-gray-900 dark:text-white">
-						Edit contentData JSON
-					</h2>
-					<textarea
-						name="contentData"
-						className="w-full rounded border border-gray-300 bg-gray-50 p-2 font-mono text-sm text-gray-800 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
-						rows={10}
-						defaultValue={JSON.stringify(content, null, 2)}
-					/>
-					<button
-						type="submit"
-						className="mt-4 rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
+				<section className="mt-8" aria-labelledby="edit-json-heading">
+					<Form
+						method="GET"
+						className="rounded-xl border border-gray-200 bg-white p-6 shadow-lg dark:border-gray-700 dark:bg-gray-800"
 					>
-						Update contentData
-					</button>
-				</Form>
+						<h2
+							id="edit-json-heading"
+							className="mb-4 text-xl font-semibold text-gray-900 dark:text-white"
+						>
+							Edit contentData JSON
+						</h2>
+						<label htmlFor="content-data-textarea" className="sr-only">
+							Edit content data JSON
+						</label>
+						<textarea
+							id="content-data-textarea"
+							name="contentData"
+							className="w-full rounded border border-gray-300 bg-gray-50 p-2 font-mono text-sm text-gray-800 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
+							rows={10}
+							defaultValue={JSON.stringify(content, null, 2)}
+							aria-label="Edit content data JSON"
+						/>
+						<button
+							type="submit"
+							className="mt-4 rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none dark:bg-blue-500 dark:hover:bg-blue-600 dark:focus:ring-blue-400"
+						>
+							Update contentData
+						</button>
+					</Form>
+				</section>
 			</div>
 		</div>
 	)

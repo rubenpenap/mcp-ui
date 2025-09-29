@@ -98,14 +98,14 @@ export default function Authorize({
 	return (
 		<div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-8 dark:from-gray-900 dark:to-gray-800">
 			<div className="mx-auto max-w-4xl">
-				<div className="mb-8 text-center">
+				<header className="mb-8 text-center">
 					<h1 className="mb-4 text-4xl font-bold text-gray-900 dark:text-white">
 						OAuth Authorization
 					</h1>
 					<p className="text-lg text-gray-600 dark:text-gray-300">
 						Select a user to authorize OAuth access to Epic Me
 					</p>
-				</div>
+				</header>
 
 				<div className="mb-8 rounded-xl bg-white p-6 shadow-lg dark:bg-gray-800 dark:shadow-gray-900/50">
 					<div className="mb-4 flex items-center gap-3">
@@ -166,13 +166,17 @@ export default function Authorize({
 				</div>
 
 				{actionData?.status === 'success' && (
-					<div className="mb-8 rounded-xl border border-green-200 bg-green-50 p-6 dark:border-green-700 dark:bg-green-900/20">
+					<div
+						className="mb-8 rounded-xl border border-green-200 bg-green-50 p-6 dark:border-green-700 dark:bg-green-900/20"
+						role="status"
+					>
 						<div className="flex">
 							<div className="flex-shrink-0">
 								<svg
 									className="h-5 w-5 text-green-400 dark:text-green-300"
 									viewBox="0 0 20 20"
 									fill="currentColor"
+									aria-hidden="true"
 								>
 									<path
 										fillRule="evenodd"
@@ -204,13 +208,17 @@ export default function Authorize({
 				)}
 
 				{actionData?.status === 'error' && actionData?.message ? (
-					<div className="mb-8 rounded-xl border border-red-200 bg-red-50 p-6 dark:border-red-700 dark:bg-red-900/20">
+					<div
+						className="mb-8 rounded-xl border border-red-200 bg-red-50 p-6 dark:border-red-700 dark:bg-red-900/20"
+						role="alert"
+					>
 						<div className="flex">
 							<div className="flex-shrink-0">
 								<svg
 									className="h-5 w-5 text-red-400 dark:text-red-300"
 									viewBox="0 0 20 20"
 									fill="currentColor"
+									aria-hidden="true"
 								>
 									<path
 										fillRule="evenodd"
@@ -231,8 +239,11 @@ export default function Authorize({
 					</div>
 				) : null}
 
-				<section className="mb-8">
-					<h2 className="mb-6 text-2xl font-bold text-gray-800 dark:text-gray-200">
+				<section className="mb-8" aria-labelledby="user-selection-heading">
+					<h2
+						id="user-selection-heading"
+						className="mb-6 text-2xl font-bold text-gray-800 dark:text-gray-200"
+					>
 						Select User Account
 					</h2>
 
@@ -387,8 +398,14 @@ export default function Authorize({
 				</div>
 
 				{/* Search Parameters Form */}
-				<section className="mt-8 rounded-xl border border-gray-200 bg-white p-6 shadow-lg dark:border-gray-700 dark:bg-gray-800">
-					<h2 className="mb-4 text-xl font-semibold text-gray-900 dark:text-white">
+				<section
+					className="mt-8 rounded-xl border border-gray-200 bg-white p-6 shadow-lg dark:border-gray-700 dark:bg-gray-800"
+					aria-labelledby="search-params-heading"
+				>
+					<h2
+						id="search-params-heading"
+						className="mb-4 text-xl font-semibold text-gray-900 dark:text-white"
+					>
 						Update Search Parameters
 					</h2>
 					<p className="mb-4 text-sm text-gray-600 dark:text-gray-300">

@@ -446,8 +446,11 @@ function KVEntryCard({ kvEntry }: { kvEntry: KVEntry }) {
 // Component for database reset section
 function DatabaseResetSection() {
 	return (
-		<section>
-			<h2 className="mb-6 text-2xl font-bold text-gray-900 dark:text-white">
+		<section aria-labelledby="db-reset-heading">
+			<h2
+				id="db-reset-heading"
+				className="mb-6 text-2xl font-bold text-gray-900 dark:text-white"
+			>
 				Database Reset
 			</h2>
 			<div className="rounded-lg border border-gray-200 bg-white p-6 shadow-lg dark:border-gray-700 dark:bg-gray-800 dark:shadow-gray-900/50">
@@ -457,13 +460,17 @@ function DatabaseResetSection() {
 					fresh data.
 				</p>
 
-				<div className="mb-6 rounded-lg border border-yellow-200 bg-yellow-50 p-4 dark:border-yellow-700 dark:bg-yellow-900/20">
+				<div
+					className="mb-6 rounded-lg border border-yellow-200 bg-yellow-50 p-4 dark:border-yellow-700 dark:bg-yellow-900/20"
+					role="alert"
+				>
 					<div className="flex">
 						<div className="flex-shrink-0">
 							<svg
 								className="h-5 w-5 text-yellow-400 dark:text-yellow-300"
 								viewBox="0 0 20 20"
 								fill="currentColor"
+								aria-hidden="true"
 							>
 								<path
 									fillRule="evenodd"
@@ -490,7 +497,8 @@ function DatabaseResetSection() {
 					<input type="hidden" name="intent" value="reset-database" />
 					<button
 						type="submit"
-						className="rounded-lg bg-red-600 px-6 py-3 font-bold text-white transition-colors duration-200 hover:bg-red-700"
+						className="rounded-lg bg-red-600 px-6 py-3 font-bold text-white transition-colors duration-200 hover:bg-red-700 focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:outline-none"
+						aria-describedby="reset-warning"
 						onClick={(e) => {
 							if (
 								!confirm(
@@ -503,6 +511,10 @@ function DatabaseResetSection() {
 					>
 						Reset Database and KV Store
 					</button>
+					<div id="reset-warning" className="sr-only">
+						Warning: This action will permanently delete all data and cannot be
+						undone.
+					</div>
 				</Form>
 			</div>
 		</section>
@@ -520,15 +532,24 @@ export default function Home({ loaderData }: Route.ComponentProps) {
 	return (
 		<div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-8 dark:from-gray-900 dark:to-gray-800">
 			<div className="mx-auto max-w-6xl">
-				<h1 className="mb-8 text-4xl font-bold text-gray-900 dark:text-white">
-					Epic Me App
-				</h1>
+				<header>
+					<h1 className="mb-8 text-4xl font-bold text-gray-900 dark:text-white">
+						Epic Me App
+					</h1>
+				</header>
 
-				<section className="mb-12">
-					<h2 className="mb-6 text-2xl font-bold text-gray-800 dark:text-gray-200">
+				<section className="mb-12" aria-labelledby="users-entries-heading">
+					<h2
+						id="users-entries-heading"
+						className="mb-6 text-2xl font-bold text-gray-800 dark:text-gray-200"
+					>
 						Users & Entries
 					</h2>
-					<div className="h-[32rem] overflow-y-auto rounded-lg border border-gray-200 bg-white p-6 shadow-lg dark:border-gray-700 dark:bg-gray-800 dark:shadow-gray-900/50">
+					<div
+						className="h-[32rem] overflow-y-auto rounded-lg border border-gray-200 bg-white p-6 shadow-lg dark:border-gray-700 dark:bg-gray-800 dark:shadow-gray-900/50"
+						role="region"
+						aria-label="Users and entries data"
+					>
 						<div className="grid gap-8">
 							{users.map((user) => (
 								<UserCard key={user.id} user={user} />
@@ -539,8 +560,11 @@ export default function Home({ loaderData }: Route.ComponentProps) {
 
 				<hr className="my-6" />
 
-				<section>
-					<h2 className="mb-6 text-2xl font-bold text-gray-900 dark:text-white">
+				<section aria-labelledby="kv-entries-heading">
+					<h2
+						id="kv-entries-heading"
+						className="mb-6 text-2xl font-bold text-gray-900 dark:text-white"
+					>
 						KV Store Entries ({kvEntries.length})
 					</h2>
 					<div className={kvContainerClass}>
