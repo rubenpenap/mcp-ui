@@ -56,6 +56,9 @@ test('journal viewer sends ui-lifecycle-iframe-ready message', async () => {
 		.object({ resource: z.object({}).passthrough() })
 		.parse(result.content[0])
 
+	// pre-fetch because vite may need to optimize deps 🙃 https://x.com/kentcdodds/status/1972793943265038731
+	await fetch(resource.text as string, { method: 'HEAD' })
+
 	const url = new URL('http://localhost:7787/mcp-ui-renderer')
 	url.searchParams.set('resourceData', JSON.stringify(resource))
 

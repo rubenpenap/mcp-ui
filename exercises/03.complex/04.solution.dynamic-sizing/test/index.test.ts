@@ -42,7 +42,7 @@ async function setupClient() {
 	}
 }
 
-test('view_journal sends ui-size-change message', async () => {
+test('journal viewer sends ui-size-change message', async () => {
 	await using setup = await setupClient()
 	const { client } = setup
 
@@ -53,79 +53,36 @@ test('view_journal sends ui-size-change message', async () => {
 	invariant(Array.isArray(result.content), '🚨 content is not an array')
 
 	const { resource } = z
-		.object({ resource: z.object({ text: z.string() }) })
+		.object({ resource: z.object({}).passthrough() })
 		.parse(result.content[0])
 
-	const urlString = resource.text
+	// pre-fetch because vite may need to optimize deps 🙃 https://x.com/kentcdodds/status/1972793943265038731
+	await fetch(resource.text as string, { method: 'HEAD' })
+
+	const url = new URL('http://localhost:7787/mcp-ui-renderer')
+	url.searchParams.set('resourceData', JSON.stringify(resource))
 
 	await using browserSetup = await setupBrowser()
 	const { page } = browserSetup
 
-	await page.addInitScript(() => {
-		// one per document; created before app code runs
-		window.__uiReadyDeferred = new Promise((resolve) => {
-			window.__resolveUiReady = resolve
-		})
-
-		window.addEventListener('message', (event: MessageEvent) => {
-			if (event?.data?.type === 'ui-size-change') {
-				window.__resolveUiReady?.(event.data)
-			}
-		})
+	await page.goto(url.toString())
+	const message = page.getByRole('log').getByText('ui-size-change')
+	await message.waitFor({ timeout: 1000 }).catch((e) => {
+		throw new Error(
+			'🚨 ui-size-change was never received. Make sure to call postMessage with "ui-size-change" with width and height and the target set to "*".',
+			{ cause: e },
+		)
 	})
 
-	await page.goto(urlString)
-
-	const message = await Promise.race([
-		page.evaluate(() => {
-			return window.__uiReadyDeferred
-		}),
-		new Promise((r, reject) =>
-			setTimeout(() => reject('🚨 timed out waiting for message'), 3000),
-		),
-	])
-
-	invariant(
-		typeof message === 'object' && message !== null,
-		'🚨 message not received',
-	)
-
-	const parsedMessage = z
-		.object({
-			type: z.string().optional(),
-			payload: z.object({ height: z.number(), width: z.number() }).optional(),
-		})
-		.parse(message)
-
-	expect(parsedMessage.type, '🚨 message type is not ui-size-change').toBe(
-		'ui-size-change',
-	)
+	const textContent = JSON.parse(await message.textContent())
 	expect(
-		parsedMessage.payload,
-		'🚨 message payload does not have a height property',
-	).toHaveProperty('height')
-	expect(
-		parsedMessage.payload,
-		'🚨 message payload does not have a width property',
-	).toHaveProperty('width')
+		textContent,
+		'🚨 the ui-size-change message is not the correct format',
+	).toEqual({
+		type: 'ui-size-change',
+		payload: {
+			height: expect.any(Number),
+			width: expect.any(Number),
+		},
+	})
 })
-
-declare global {
-	interface Window {
-		__uiReadyDeferred?: Promise<{
-			type: string
-			payload: { height: number; width: number }
-		}>
-		__resolveUiReady?: (data: {
-			type: string
-			payload: { height: number; width: number }
-		}) => void
-		addEventListener(
-			type: string,
-			listener: (event: MessageEvent) => void,
-			options?: { once?: boolean },
-		): void
-	}
-
-	var window: Window & typeof globalThis
-}
