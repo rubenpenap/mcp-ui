@@ -7,4 +7,5 @@ export default [
 	route('/db-api', 'routes/db-api.tsx'),
 	route('/introspect', 'routes/introspect.tsx'),
 	route('/test-auth', 'routes/test-auth.tsx'),
+	route('/mcp-ui-renderer', 'routes/mcp-ui-renderer.tsx'),
 ] satisfies RouteConfig

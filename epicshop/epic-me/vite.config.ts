@@ -6,14 +6,18 @@ import devtoolsJson from 'vite-plugin-devtools-json'
 import tsconfigPaths from 'vite-tsconfig-paths'
 
 const port = 7787
-if (!(globalThis as any).loggedPort) {
-	console.log(`EpicMeApp running at http://localhost:${port}`)
-	;(globalThis as any).loggedPort = true
-}
 
 export default defineConfig({
 	server: { port },
 	plugins: [
+		{
+			name: 'log-server-start',
+			configureServer(server) {
+				server.httpServer?.on('listening', () => {
+					console.log(`EpicMeApp running at http://localhost:${port}`)
+				})
+			},
+		},
 		{
 			name: 'strip-typegen-imports',
 			enforce: 'pre',
