@@ -74,7 +74,7 @@ test('journal viewer sends tool message', async () => {
 	await viewDetailsButton.click()
 
 	const message = page.getByRole('log').getByText('tool')
-	await message.waitFor({ timeout: 10_000 }).catch((e) => {
+	await message.waitFor({ timeout: 1000 }).catch((e) => {
 		throw new Error(
 			'🚨 tool message was never received. Make sure to call sendMcpMessage with "tool"',
 			{ cause: e },
@@ -97,7 +97,7 @@ test('journal viewer sends tool message', async () => {
 	// then click the "send" button
 	// no need to input anything in this case because there's no expected response
 	await page.getByRole('button', { name: 'send' }).click()
-}, 50_000)
+})
 
 // because vite needs to optimize deps 😭😡
 async function handleViteDeps(page: Page) {

@@ -8,7 +8,7 @@ import { z } from 'zod'
 const mcpServerPort = inject('mcpServerPort')
 
 async function setupBrowser() {
-	const browser = await chromium.launch({ headless: false })
+	const browser = await chromium.launch({ headless: true })
 	const page = await browser.newPage()
 	return {
 		browser,

@@ -8,7 +8,7 @@ import { z } from 'zod'
 const mcpServerPort = inject('mcpServerPort')
 
 async function setupBrowser() {
-	const browser = await chromium.launch({ headless: false })
+	const browser = await chromium.launch({ headless: true })
 	const page = await browser.newPage()
 	return {
 		browser,
@@ -74,7 +74,7 @@ test('journal viewer sends prompt message', async () => {
 	await viewDetailsButton.click()
 
 	const message = page.getByRole('log').getByText('prompt')
-	await message.waitFor({ timeout: 10_000 }).catch((e) => {
+	await message.waitFor({ timeout: 1000 }).catch((e) => {
 		throw new Error(
 			'🚨 prompt message was never received. Make sure to call sendMcpMessage with "prompt"',
 			{ cause: e },
@@ -96,7 +96,7 @@ test('journal viewer sends prompt message', async () => {
 	// then click the "send" button
 	// no need to input anything in this case because there's no expected response
 	await page.getByRole('button', { name: 'send' }).click()
-}, 50_000)
+})
 
 // because vite needs to optimize deps 😭😡
 async function handleViteDeps(page: Page) {
