@@ -4,6 +4,12 @@
 import * as react from 'react'
 import * as errorBoundary from 'react-error-boundary'
 import * as misc from '#app/utils/misc.ts'
+import { type Route } from './+types/healthcheck.tsx'
+
+export async function loader({ context }: Route.LoaderArgs) {
+	await context.db.getEntries()
+	return { ok: true }
+}
 
 export default function Healthcheck() {
 	react.useEffect(() => {

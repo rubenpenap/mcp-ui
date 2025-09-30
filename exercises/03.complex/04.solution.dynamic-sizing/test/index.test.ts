@@ -1,14 +1,14 @@
 import { invariant } from '@epic-web/invariant'
 import { Client } from '@modelcontextprotocol/sdk/client'
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js'
-import { chromium } from 'playwright'
+import { chromium, type Page } from 'playwright'
 import { test, expect, inject } from 'vitest'
 import { z } from 'zod'
 
 const mcpServerPort = inject('mcpServerPort')
 
 async function setupBrowser() {
-	const browser = await chromium.launch({ headless: true })
+	const browser = await chromium.launch({ headless: false })
 	const page = await browser.newPage()
 	return {
 		browser,
@@ -56,9 +56,6 @@ test('journal viewer sends ui-size-change message', async () => {
 		.object({ resource: z.object({}).passthrough() })
 		.parse(result.content[0])
 
-	// pre-fetch because vite may need to optimize deps 🙃 https://x.com/kentcdodds/status/1972793943265038731
-	await fetch(resource.text as string, { method: 'HEAD' })
-
 	const url = new URL('http://localhost:7787/mcp-ui-renderer')
 	url.searchParams.set('resourceData', JSON.stringify(resource))
 
@@ -66,6 +63,9 @@ test('journal viewer sends ui-size-change message', async () => {
 	const { page } = browserSetup
 
 	await page.goto(url.toString())
+
+	await handleViteDeps(page)
+
 	const message = page.getByRole('log').getByText('ui-size-change')
 	await message.waitFor({ timeout: 1000 }).catch((e) => {
 		throw new Error(
@@ -74,9 +74,10 @@ test('journal viewer sends ui-size-change message', async () => {
 		)
 	})
 
-	const textContent = JSON.parse(await message.textContent())
+	const textContent = await message.textContent()
+	const messageContent = JSON.parse(textContent!)
 	expect(
-		textContent,
+		messageContent,
 		'🚨 the ui-size-change message is not the correct format',
 	).toEqual({
 		type: 'ui-size-change',
@@ -86,3 +87,20 @@ test('journal viewer sends ui-size-change message', async () => {
 		},
 	})
 })
+
+// because vite needs to optimize deps 😭😡
+async function handleViteDeps(page: Page) {
+	await page
+		.frameLocator('iframe')
+		.locator('vite-error-overlay')
+		.waitFor({ timeout: 200 })
+		.then(
+			async () => {
+				await page.reload()
+				await new Promise((resolve) => setTimeout(resolve, 400))
+			},
+			() => {
+				// good...
+			},
+		)
+}
