@@ -1,3 +1,4 @@
+import { invariant } from '@epic-web/invariant'
 import { Client } from '@modelcontextprotocol/sdk/client'
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js'
 import { test, expect, inject } from 'vitest'
@@ -28,7 +29,7 @@ async function setupClient() {
 	}
 }
 
-test('get raw html for known tag id', async () => {
+test('get remote dom for known tag id', async () => {
 	await using setup = await setupClient()
 	const { client } = setup
 
@@ -53,11 +54,31 @@ test('get raw html for known tag id', async () => {
 			type: 'resource',
 			resource: {
 				uri: 'ui://view-tag/1',
-				mimeType: 'text/html',
-				text: expect.stringContaining('coding'),
+				mimeType:
+					'application/vnd.mcp-ui.remote-dom+javascript; framework=react',
+				text: expect.any(String),
 			},
 		},
 	])
+	const { resource } = z
+		.object({ resource: z.object({ text: z.string() }) })
+		.parse(content[0])
+
+	expect(
+		resource.text,
+		'🚨 resource text does not contain "ui-stack"',
+	).toContain('ui-stack')
+	expect(resource.text, '🚨 resource text does not contain "coding"').toContain(
+		'coding',
+	)
+	expect(
+		resource.text,
+		'🚨 resource text does not contain "document.createElement"',
+	).toContain('document.createElement')
+	expect(
+		resource.text,
+		'🚨 resource text does not contain "root.appendChild"',
+	).toContain('root.appendChild')
 })
 
 test('get raw html for unknown tag id', async () => {
@@ -85,9 +106,30 @@ test('get raw html for unknown tag id', async () => {
 			type: 'resource',
 			resource: {
 				uri: 'ui://view-tag/999',
-				mimeType: 'text/html',
+				mimeType:
+					'application/vnd.mcp-ui.remote-dom+javascript; framework=react',
 				text: expect.stringMatching(/not found/i),
 			},
 		},
 	])
+	const { resource } = z
+		.object({ resource: z.object({ text: z.string() }) })
+		.parse(content[0])
+
+	expect(
+		resource.text,
+		'🚨 resource text does not contain "ui-stack"',
+	).toContain('ui-stack')
+	expect(
+		resource.text,
+		'🚨 resource text does not contain "not found"',
+	).toMatch(/not found/i)
+	expect(
+		resource.text,
+		'🚨 resource text does not contain "document.createElement"',
+	).toContain('document.createElement')
+	expect(
+		resource.text,
+		'🚨 resource text does not contain "root.appendChild"',
+	).toContain('root.appendChild')
 })

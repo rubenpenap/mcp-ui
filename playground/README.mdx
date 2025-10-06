@@ -1,54 +1,74 @@
-# Raw HTML
+# Remote DOM
 
-<EpicVideo url="https://www.epicai.pro/workshops/day-5-6-mcp-ui/raw-html~nf6c7" />
+<EpicVideo url="https://www.epicai.pro/workshops/day-5-6-mcp-ui/remote-dom-715sn" />
 
-👨‍💼 When users ask our AI assistant about specific tags or categories, they expect to see that information presented clearly and visually, not just as a wall of text. Think about it - when someone asks "What is the 'javascript' tag about?" they want to see a nicely formatted card with the tag name prominently displayed and a clear description, not just raw text that says "javascript: A programming language for web development."
+👨‍💼 When users interact with our journaling app, they expect a consistent, professional experience that feels native to the application they're using. Right now, our tag viewer uses raw HTML which means our UI is rendered in an iframe and cannot resemble the variety of agents using our MCP server because it can't integrate with the host application's design system. Users notice this inconsistency and it makes our app feel less polished and trustworthy.
 
-The problem is that our current system only returns plain text responses, which makes it harder for users to quickly scan and understand the information. Users have to read through paragraphs of text to find what they're looking for, and important details can get lost in the noise.
+The problem is that raw HTML gives us complete control but also complete responsibility for every aspect of the user interface. This leads to a fragmented user experience where each UI component feels like it belongs to a different application.
 
-To solve this, we need to transform our text-based responses into rich, visual interfaces that users can quickly scan and understand. This is where MCP UI comes in - it allows us to send HTML content that gets rendered as actual visual components instead of plain text.
-
-Here's the example of a weather card again:
+Instead, we can use Remote DOM to create UI components that automatically inherit the host application's design system. This means our tag viewer will look and feel like it belongs in whatever application the user is using, whether that's a chat interface, a dashboard, or a mobile app.
 
 ```ts
-import { createUIResource } from '@mcp-ui/server'
-
-// Create a UI resource with raw HTML
+// New approach: Remote DOM with consistent components
 const resource = createUIResource({
-	uri: 'ui://weather-card/lagos-nigeria',
+	uri: 'ui://weather-card/singapore',
 	content: {
-		type: 'rawHtml',
-		htmlString: `
-			<div style="padding: 20px; border: 1px solid #ccc; border-radius: 8px; background: linear-gradient(135deg, #74b9ff, #0984e3); color: white;">
-				<h1>Lagos, Nigeria</h1>
-				<p>85°F - Partly Cloudy</p>
-				<p>Humidity: 78% | Wind: 12 mph</p>
-			</div>
+		type: 'remoteDom',
+		framework: 'react',
+		// some editors will syntax highlight a string followed by the /* js */ comment
+		script: /* js */ `
+			const stack = document.createElement('ui-stack');
+			stack.setAttribute('direction', 'vertical');
+			stack.setAttribute('spacing', '20');
+			stack.setAttribute('align', 'center');
+
+			const title = document.createElement('ui-text');
+			title.setAttribute('content', 'Singapore');
+			stack.appendChild(title);
+
+			const temperature = document.createElement('ui-text');
+			temperature.setAttribute('content', '88°F - Partly Cloudy');
+			stack.appendChild(temperature);
+
+			const details = document.createElement('ui-text');
+			details.setAttribute('content', 'Humidity: 78% | Wind: 12 mph');
+			stack.appendChild(details);
+
+			root.appendChild(stack);
 		`,
 	},
 	encoding: 'text',
 })
 ```
 
-The key difference is that instead of returning plain text content, we're returning a UI resource that clients can render as an actual visual component. This transforms the user experience from reading text descriptions to interacting with rich, visual interfaces.
-
 <callout-info>
-	The `createUIResource` function packages your HTML content into a format that
-	MCP clients can understand and render. The `uri` parameter creates a unique
-	identifier for your UI resource, while the `content` specifies what type of UI
-	you're providing.
+	Remote DOM uses JavaScript to create and manipulate DOM elements using
+	predefined UI components like `ui-stack`, `ui-text`, and `ui-button`. These
+	components are automatically styled and provide consistent behavior across the
+	host application.
 </callout-info>
 
-When there's no tag found, we should also provide a clear visual indication rather than just text:
+You need to implement the `getTagRemoteDomUIScript` function to create a Remote DOM version of the tag viewer. Here's what you need to know:
 
-<callout-info>
-	The styling in these examples uses inline CSS for simplicity, but you can use
-	any valid HTML markup. Consider using CSS classes or even external stylesheets
-	for more complex designs.
-</callout-info>
+- `ui-stack` - Container with layout properties (direction, spacing, align)
+- `ui-text` - Text content with automatic styling
 
-The goal is to make tag information feel immediate and scannable for users, so they can quickly understand what each tag represents without having to parse through walls of text.
+```js
+const stack = document.createElement('ui-stack')
+stack.setAttribute('direction', 'vertical')
+stack.setAttribute('spacing', '20')
+stack.setAttribute('align', 'center')
 
-Now, let's implement this visual transformation by updating the `get_tag` tool to return a UI resource instead of plain text.
+const title = document.createElement('ui-text')
+title.setAttribute('content', 'Your content here')
+stack.appendChild(title)
 
-- 📜 [MCP UI Server Documentation](https://mcpui.dev/guide/server/typescript/usage-examples#metadata-configuration-examples).
+// "root" is globally available in your script
+root.appendChild(stack)
+```
+
+There's more available from remote-dom, but we'll keep it simple for now.
+
+📜 [MCP UI
+Server
+Documentation](https://mcpui.dev/guide/server/typescript/usage-examples#basic-usage).
