@@ -71,14 +71,18 @@ export async function initializeTools(agent: EpicMeMCP) {
 			} satisfies ToolAnnotations,
 		},
 		async () => {
-			// 🐨 create an iframeURL at ${agent.requireBaseUrl()}/ui/journal-viewer
+			const iframeUrl = new URL('/ui/journal-viewer', agent.requireBaseUrl())
 
 			return {
 				content: [
-					// 🐨 create a UI resource with the uri `ui://view-journal/${Date.now()}`
-					// 🐨 set the content.type to "externalUrl" and the content.iframeUrl to the iframeUrl you created
-					// 🐨 set the encoding to text
-					createText('TODO...'),
+					createUIResource({
+						uri: `ui://view-journal/${Date.now()}`,
+						content: {
+							type: 'externalUrl',
+							iframeUrl: iframeUrl.toString(),
+						},
+						encoding: 'text',
+					}),
 				],
 			}
 		},
