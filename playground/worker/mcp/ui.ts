@@ -4,20 +4,38 @@ export async function getTagRemoteDomUIScript(db: DBClient, tagId: number) {
 	const tag = await db.getTag(tagId)
 	if (tag) {
 		return /* js */ `
-// 🐨 Create a ui-stack element with vertical direction, spacing 20, and center alignment
-// 🐨 Create a ui-text element for the tag name and append it to the stack
-// 🐨 Create a ui-text element for the tag description and append it to the stack
-// 🐨 Append the stack to the (globally available) "root" element
+const stack = document.createElement('ui-stack');
+stack.setAttribute('direction', 'vertical');
+stack.setAttribute('spacing', '20');
+stack.setAttribute('align', 'center');
+
+const title = document.createElement('ui-text');
+title.setAttribute('content', ${JSON.stringify(tag.name)});
+stack.appendChild(title);
+
+const description = document.createElement('ui-text');
+description.setAttribute('content', ${JSON.stringify(tag.description)});
+stack.appendChild(description);
+
+root.appendChild(stack);
 		`.trim()
 	} else {
 		return /* js */ `
-// 🐨 Create a ui-stack element with vertical direction, spacing 20, and center alignment
-// 🐨 Create a ui-text element with content "Tag not found" and append it to the stack
-// 🐨 Append the stack to the (globally available) "root" element
+const stack = document.createElement('ui-stack');
+stack.setAttribute('direction', 'vertical');
+stack.setAttribute('spacing', '20');
+stack.setAttribute('align', 'center');
+
+const title = document.createElement('ui-text');
+title.setAttribute('content', 'Tag not found');
+stack.appendChild(title);
+
+root.appendChild(stack);
 		`.trim()
 	}
 }
 
+// we'll just keep this for reference for now...
 export async function getTagViewUI(db: DBClient, tagId: number) {
 	const tag = await db.getTag(tagId)
 	if (tag) {
