@@ -1,10 +1,6 @@
 import { createRequestHandler } from 'react-router'
 import { db } from './db.ts'
-import {
-	EpicMeMCP,
-	// 💰 you'll need this:
-	// type Props as McpProps,
-} from './mcp/index.ts'
+import { EpicMeMCP, type Props as McpProps } from './mcp/index.ts'
 
 const requestHandler = createRequestHandler(
 	() => import('virtual:react-router/server-build'),
@@ -12,13 +8,15 @@ const requestHandler = createRequestHandler(
 )
 
 export default {
-	// 🐨 add McpProps to the execution context:
-	// 💰 ctx: ExecutionContext<McpProps>
-	fetch: async (request: Request, env: Env, ctx: ExecutionContext) => {
+	fetch: async (
+		request: Request,
+		env: Env,
+		ctx: ExecutionContext<McpProps>,
+	) => {
 		const url = new URL(request.url)
 
 		if (url.pathname === '/mcp') {
-			// 🐨 set ctx.props.baseUrl to the url.origin
+			ctx.props.baseUrl = url.origin
 
 			return EpicMeMCP.serve('/mcp', {
 				binding: 'EPIC_ME_MCP_OBJECT',
