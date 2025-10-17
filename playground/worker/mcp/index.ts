@@ -6,7 +6,11 @@ import { initializePrompts } from './prompts.ts'
 import { initializeResources } from './resources.ts'
 import { initializeTools } from './tools.ts'
 
-export class EpicMeMCP extends McpAgent<Env> {
+// 🐨 add a baseUrl property to the Props type
+export type Props = {}
+type State = {}
+
+export class EpicMeMCP extends McpAgent<Env, State, Props> {
 	db!: DBClient
 	server = new McpServer(
 		{
@@ -38,4 +42,6 @@ You can also help users add tags to their entries and get all tags for an entry.
 		await initializeResources(this)
 		await initializePrompts(this)
 	}
+	// 🐨 create a requireBaseUrl method that returns the baseUrl
+	// 🐨 add a check to ensure the baseUrl exists and throw an error if it doesn't
 }

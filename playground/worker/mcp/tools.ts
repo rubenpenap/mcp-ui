@@ -18,7 +18,7 @@ import { type CallToolResult } from '@modelcontextprotocol/sdk/types.js'
 import { z } from 'zod'
 import { type EpicMeMCP } from './index.ts'
 import { suggestTagsSampling } from './sampling.ts'
-import { getTagRemoteDomUIScript } from './ui.ts'
+import { getTagViewUI } from './ui.ts'
 
 export async function initializeTools(agent: EpicMeMCP) {
 	agent.server.registerTool(
@@ -55,6 +55,30 @@ export async function initializeTools(agent: EpicMeMCP) {
 					),
 					createEntryResourceLink(createdEntry),
 					createText(structuredContent),
+				],
+			}
+		},
+	)
+
+	agent.server.registerTool(
+		'view_journal',
+		{
+			title: 'View Journal',
+			description: 'View the journal visually',
+			annotations: {
+				readOnlyHint: true,
+				openWorldHint: false,
+			} satisfies ToolAnnotations,
+		},
+		async () => {
+			// 🐨 create an iframeURL at ${agent.requireBaseUrl()}/ui/journal-viewer
+
+			return {
+				content: [
+					// 🐨 create a UI resource with the uri `ui://view-journal/${Date.now()}`
+					// 🐨 set the content.type to "externalUrl" and the content.iframeUrl to the iframeUrl you created
+					// 🐨 set the encoding to text
+					createText('TODO...'),
 				],
 			}
 		},
@@ -242,9 +266,8 @@ export async function initializeTools(agent: EpicMeMCP) {
 					createUIResource({
 						uri: `ui://view-tag/${id}`,
 						content: {
-							type: 'remoteDom',
-							framework: 'react',
-							script: await getTagRemoteDomUIScript(agent.db, id),
+							type: 'rawHtml',
+							htmlString: await getTagViewUI(agent.db, id),
 						},
 						encoding: 'text',
 					}),

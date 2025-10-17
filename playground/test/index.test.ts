@@ -1,4 +1,3 @@
-import { invariant } from '@epic-web/invariant'
 import { Client } from '@modelcontextprotocol/sdk/client'
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js'
 import { test, expect, inject } from 'vitest'
@@ -29,107 +28,27 @@ async function setupClient() {
 	}
 }
 
-test('get remote dom for known tag id', async () => {
+test('view_journal sends iframe response', async () => {
 	await using setup = await setupClient()
 	const { client } = setup
 
-	const result = await client
-		.callTool({
-			name: 'view_tag',
-			arguments: {
-				id: 1,
-			},
-		})
-		.catch((e) => {
-			throw new Error('🚨 view_tag tool call failed', { cause: e })
-		})
+	const result = await client.callTool({ name: 'view_journal' }).catch((e) => {
+		throw new Error('🚨 view_journal tool call failed', { cause: e })
+	})
 
 	const content = z.array(z.unknown()).parse(result.content)
 
 	expect(
 		content,
-		'🚨 content returned from view_tag tool does not match the expected format',
+		'🚨 content returned from view_journal tool does not match the expected format',
 	).toEqual([
 		{
 			type: 'resource',
 			resource: {
-				uri: 'ui://view-tag/1',
-				mimeType:
-					'application/vnd.mcp-ui.remote-dom+javascript; framework=react',
-				text: expect.any(String),
+				uri: expect.stringMatching(/^ui:\/\/view-journal\/\d+$/),
+				mimeType: 'text/uri-list',
+				text: `http://localhost:${mcpServerPort}/ui/journal-viewer`,
 			},
 		},
 	])
-	const { resource } = z
-		.object({ resource: z.object({ text: z.string() }) })
-		.parse(content[0])
-
-	expect(
-		resource.text,
-		'🚨 resource text does not contain "ui-stack"',
-	).toContain('ui-stack')
-	expect(resource.text, '🚨 resource text does not contain "coding"').toContain(
-		'coding',
-	)
-	expect(
-		resource.text,
-		'🚨 resource text does not contain "document.createElement"',
-	).toContain('document.createElement')
-	expect(
-		resource.text,
-		'🚨 resource text does not contain "root.appendChild"',
-	).toContain('root.appendChild')
-})
-
-test('get raw html for unknown tag id', async () => {
-	await using setup = await setupClient()
-	const { client } = setup
-
-	const result = await client
-		.callTool({
-			name: 'view_tag',
-			arguments: {
-				id: 999,
-			},
-		})
-		.catch((e) => {
-			throw new Error('🚨 view_tag tool call failed', { cause: e })
-		})
-
-	const content = z.array(z.unknown()).parse(result.content)
-
-	expect(
-		content,
-		'🚨 content returned from view_tag tool does not match the expected format',
-	).toEqual([
-		{
-			type: 'resource',
-			resource: {
-				uri: 'ui://view-tag/999',
-				mimeType:
-					'application/vnd.mcp-ui.remote-dom+javascript; framework=react',
-				text: expect.stringMatching(/not found/i),
-			},
-		},
-	])
-	const { resource } = z
-		.object({ resource: z.object({ text: z.string() }) })
-		.parse(content[0])
-
-	expect(
-		resource.text,
-		'🚨 resource text does not contain "ui-stack"',
-	).toContain('ui-stack')
-	expect(
-		resource.text,
-		'🚨 resource text does not contain "not found"',
-	).toMatch(/not found/i)
-	expect(
-		resource.text,
-		'🚨 resource text does not contain "document.createElement"',
-	).toContain('document.createElement')
-	expect(
-		resource.text,
-		'🚨 resource text does not contain "root.appendChild"',
-	).toContain('root.appendChild')
 })
