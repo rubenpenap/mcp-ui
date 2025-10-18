@@ -23,14 +23,23 @@ type McpMessageReturnType<Options> = Promise<
 >
 
 type McpMessageTypes = {
-	// 🐨 add support for a 'tool' type which has a payload of { toolName: string; params: Record<string, unknown> }
+	tool: { toolName: string; params: Record<string, unknown> }
 	link: { url: string }
 }
 
 type McpMessageType = keyof McpMessageTypes
 
-// 🐨 add another override for the 'tool' type
-// 💰 it should have the same signature as the 'link' type (except the type is 'tool')
+function sendMcpMessage<Options extends MessageOptions>(
+	type: 'tool',
+	payload: McpMessageTypes['tool'],
+	options?: Options,
+): McpMessageReturnType<Options>
+
+function sendMcpMessage<Options extends MessageOptions>(
+	type: 'link',
+	payload: McpMessageTypes['link'],
+	options?: Options,
+): McpMessageReturnType<Options>
 
 function sendMcpMessage<Options extends MessageOptions>(
 	type: 'link',
