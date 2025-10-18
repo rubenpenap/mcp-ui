@@ -42,7 +42,7 @@ async function setupClient() {
 	}
 }
 
-test('journal viewer sends ui-size-change message', async () => {
+test('journal viewer sends tool message', async () => {
 	await using setup = await setupClient()
 	const { client } = setup
 
@@ -67,13 +67,16 @@ test('journal viewer sends ui-size-change message', async () => {
 	await handleViteDeps(page)
 
 	const iframe = page.frameLocator('iframe')
-	const postButton = iframe.getByRole('button', { name: 'Post' })
-	await postButton.click()
 
-	const message = page.getByRole('log').getByText('link')
+	const viewDetailsButton = iframe
+		.getByRole('button', { name: 'View Details' })
+		.first()
+	await viewDetailsButton.click()
+
+	const message = page.getByRole('log').getByText('tool')
 	await message.waitFor({ timeout: 1000 }).catch((e) => {
 		throw new Error(
-			'🚨 link message was never received. Make sure to call postMessage with "link" with url and the target set to "*".',
+			'🚨 tool message was never received. Make sure to call sendMcpMessage with "tool"',
 			{ cause: e },
 		)
 	})
@@ -82,12 +85,13 @@ test('journal viewer sends ui-size-change message', async () => {
 	const messageContent = JSON.parse(textContent!)
 	expect(
 		messageContent,
-		'🚨 the link message is not the correct format',
+		'🚨 the tool message is not the correct format',
 	).toEqual({
-		type: 'link',
+		type: 'tool',
 		messageId: expect.any(String),
 		payload: {
-			url: expect.any(String),
+			toolName: 'view_entry',
+			params: { id: expect.any(Number) },
 		},
 	})
 	// then click the "send" button

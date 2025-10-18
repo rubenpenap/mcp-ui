@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { type z } from 'zod'
 
 export function useMcpUiInit(rootRef: React.RefObject<HTMLDivElement | null>) {
 	useEffect(() => {
@@ -15,14 +16,48 @@ export function useMcpUiInit(rootRef: React.RefObject<HTMLDivElement | null>) {
 	}, [rootRef])
 }
 
-export function sendLinkMcpMessage(url: string) {
+type MessageOptions = { schema?: z.ZodSchema }
+
+type McpMessageReturnType<Options> = Promise<
+	Options extends { schema: z.ZodSchema } ? z.infer<Options['schema']> : unknown
+>
+
+type McpMessageTypes = {
+	// 🐨 add support for a 'tool' type which has a payload of { toolName: string; params: Record<string, unknown> }
+	link: { url: string }
+}
+
+type McpMessageType = keyof McpMessageTypes
+
+// 🐨 add another override for the 'tool' type
+// 💰 it should have the same signature as the 'link' type (except the type is 'tool')
+
+function sendMcpMessage<Options extends MessageOptions>(
+	type: 'link',
+	payload: McpMessageTypes['link'],
+	options?: Options,
+): McpMessageReturnType<Options>
+
+function sendMcpMessage(
+	type: McpMessageType,
+	payload: McpMessageTypes[McpMessageType],
+	options: MessageOptions = {},
+): McpMessageReturnType<typeof options> {
+	const { schema } = options
 	const messageId = crypto.randomUUID()
 
 	return new Promise((resolve, reject) => {
-		window.parent.postMessage(
-			{ type: 'link', messageId, payload: { url } },
-			'*',
-		)
+		if (!window.parent || window.parent === window) {
+			console.log(`[MCP] No parent frame available. Would have sent message:`, {
+				type,
+				messageId,
+				payload,
+			})
+			reject(new Error('No parent frame available'))
+			return
+		}
+
+		window.parent.postMessage({ type, messageId, payload }, '*')
 
 		function handleMessage(event: MessageEvent) {
 			if (event.data.type !== 'ui-message-response') return
@@ -32,9 +67,16 @@ export function sendLinkMcpMessage(url: string) {
 			const { response, error } = event.data.payload
 
 			if (error) return reject(error)
-			return resolve(response)
+			if (!schema) return resolve(response)
+
+			const parseResult = schema.safeParse(response)
+			if (!parseResult.success) return reject(parseResult.error)
+
+			return resolve(parseResult.data)
 		}
 
 		window.addEventListener('message', handleMessage)
 	})
 }
+
+export { sendMcpMessage }

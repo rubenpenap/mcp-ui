@@ -1,11 +1,11 @@
-import { sendLinkMcpMessage, useMcpUiInit } from '#app/utils/mcp.ts'
-import { useDoubleCheck } from '#app/utils/misc.ts'
-import { useRef, useState, useTransition } from 'react'
+import { useState, useTransition, useRef } from 'react'
 import {
 	ErrorBoundary,
 	useErrorBoundary,
 	type FallbackProps,
 } from 'react-error-boundary'
+import { useMcpUiInit, sendMcpMessage } from '#app/utils/mcp.ts'
+import { useDoubleCheck } from '#app/utils/misc.ts'
 import { type Route } from './+types/journal-viewer.tsx'
 
 export async function loader({ context }: Route.LoaderArgs) {
@@ -158,7 +158,7 @@ function XPostLinkImpl({ entryCount }: { entryCount: number }) {
 				const url = new URL('https://x.com/intent/post')
 				url.searchParams.set('text', text)
 
-				await sendLinkMcpMessage(url.toString())
+				await sendMcpMessage('link', { url: url.toString() })
 			} catch (err) {
 				showBoundary(err)
 			}
@@ -280,6 +280,8 @@ function ViewEntryButtonImpl({
 	const handleViewEntry = () => {
 		startTransition(async () => {
 			try {
+				// 🐨 replace this throw with await sendMcpMessage
+				// the type will be 'tool', the toolName will be 'view_entry', and the params will be { id: entry.id }
 				throw new Error('Calling tools is not yet supported')
 			} catch (err) {
 				showBoundary(err)
