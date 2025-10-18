@@ -1,16 +1,10 @@
-import {
-	useEffect,
-	useState,
-	useTransition,
-	// 💰 you'll need this:
-	useRef,
-} from 'react'
+import { useDoubleCheck } from '#app/utils/misc.ts'
+import { useEffect, useRef, useState, useTransition } from 'react'
 import {
 	ErrorBoundary,
 	useErrorBoundary,
 	type FallbackProps,
 } from 'react-error-boundary'
-import { useDoubleCheck } from '#app/utils/misc.ts'
 import { type Route } from './+types/journal-viewer.tsx'
 
 export async function loader({ context }: Route.LoaderArgs) {
@@ -23,21 +17,19 @@ export default function JournalViewer({ loaderData }: Route.ComponentProps) {
 	const [deletedEntryIds, setDeletedEntryIds] = useState<Set<number>>(
 		() => new Set([]),
 	)
-	// 🐨 create a ref for the root element of this component
-	// 💰 (this isn't a react workshop, here's how you do that):
-	// const rootRef = useRef<HTMLDivElement>(null)
+	const rootRef = useRef<HTMLDivElement>(null)
 
 	useEffect(() => {
 		window.parent.postMessage({ type: 'ui-lifecycle-iframe-ready' }, '*')
 
-		// 🐨 get the root element
-		// 💰 const root = rootRef.current
-		// 🐨 if the root is null, return
-		// 🐨 get the height and width of the root
-		// 💰 const height = root.clientHeight
-		// 💰 const width = root.clientWidth
-		// 🐨 call window.parent.postMessage with the type 'ui-size-change' and the payload { height, width }
-		// 🐨 set the targetOrigin to '*'
+		const root = rootRef.current
+		if (!root) return
+		const height = root.clientHeight
+		const width = root.clientWidth
+		window.parent.postMessage(
+			{ type: 'ui-size-change', payload: { height, width } },
+			'*',
+		)
 	}, [])
 
 	const handleEntryDeleted = (entryId: number) => {
@@ -46,8 +38,7 @@ export default function JournalViewer({ loaderData }: Route.ComponentProps) {
 
 	return (
 		<div
-			// 🐨 add the ref to the div
-			// 💰 ref={rootRef}
+			ref={rootRef}
 			className="bg-background max-h-[800px] overflow-y-auto p-4"
 		>
 			<div className="mx-auto max-w-4xl">
