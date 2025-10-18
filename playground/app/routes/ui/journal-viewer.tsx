@@ -1,11 +1,11 @@
-import { useState, useTransition, useRef } from 'react'
+import { sendMcpMessage, useMcpUiInit } from '#app/utils/mcp.ts'
+import { useDoubleCheck } from '#app/utils/misc.ts'
+import { useRef, useState, useTransition } from 'react'
 import {
 	ErrorBoundary,
 	useErrorBoundary,
 	type FallbackProps,
 } from 'react-error-boundary'
-import { useMcpUiInit, sendMcpMessage } from '#app/utils/mcp.ts'
-import { useDoubleCheck } from '#app/utils/misc.ts'
 import { type Route } from './+types/journal-viewer.tsx'
 
 export async function loader({ context }: Route.LoaderArgs) {
@@ -280,9 +280,10 @@ function ViewEntryButtonImpl({
 	const handleViewEntry = () => {
 		startTransition(async () => {
 			try {
-				// 🐨 replace this throw with await sendMcpMessage
-				// the type will be 'tool', the toolName will be 'view_entry', and the params will be { id: entry.id }
-				throw new Error('Calling tools is not yet supported')
+				await sendMcpMessage('tool', {
+					toolName: 'view_entry',
+					params: { id: entry.id },
+				})
 			} catch (err) {
 				showBoundary(err)
 			}
