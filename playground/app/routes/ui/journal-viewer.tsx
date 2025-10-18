@@ -1,10 +1,15 @@
-import { useDoubleCheck } from '#app/utils/misc.ts'
-import { useEffect, useRef, useState, useTransition } from 'react'
+import { useState, useTransition, useRef } from 'react'
 import {
 	ErrorBoundary,
 	useErrorBoundary,
 	type FallbackProps,
 } from 'react-error-boundary'
+import {
+	useMcpUiInit,
+	// 💰 you'll want this:
+	// sendLinkMcpMessage
+} from '#app/utils/mcp.ts'
+import { useDoubleCheck } from '#app/utils/misc.ts'
 import { type Route } from './+types/journal-viewer.tsx'
 
 export async function loader({ context }: Route.LoaderArgs) {
@@ -18,19 +23,7 @@ export default function JournalViewer({ loaderData }: Route.ComponentProps) {
 		() => new Set([]),
 	)
 	const rootRef = useRef<HTMLDivElement>(null)
-
-	useEffect(() => {
-		window.parent.postMessage({ type: 'ui-lifecycle-iframe-ready' }, '*')
-
-		const root = rootRef.current
-		if (!root) return
-		const height = root.clientHeight
-		const width = root.clientWidth
-		window.parent.postMessage(
-			{ type: 'ui-size-change', payload: { height, width } },
-			'*',
-		)
-	}, [])
+	useMcpUiInit(rootRef)
 
 	const handleEntryDeleted = (entryId: number) => {
 		setDeletedEntryIds((prev) => new Set([...prev, entryId]))
@@ -169,6 +162,7 @@ function XPostLinkImpl({ entryCount }: { entryCount: number }) {
 				const url = new URL('https://x.com/intent/post')
 				url.searchParams.set('text', text)
 
+				// 🐨 replace this with await sendLinkMcpMessage(url.toString())
 				throw new Error(`Links not yet supported`)
 			} catch (err) {
 				showBoundary(err)

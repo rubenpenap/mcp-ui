@@ -62,13 +62,18 @@ test('journal viewer sends ui-size-change message', async () => {
 	await using browserSetup = await setupBrowser()
 	const { page } = browserSetup
 
+	await page.goto(url.toString())
+
 	await handleViteDeps(page)
 
-	await page.goto(url.toString())
-	const message = page.getByRole('log').getByText('ui-size-change')
+	const iframe = page.frameLocator('iframe')
+	const postButton = iframe.getByRole('button', { name: 'Post' })
+	await postButton.click()
+
+	const message = page.getByRole('log').getByText('link')
 	await message.waitFor({ timeout: 1000 }).catch((e) => {
 		throw new Error(
-			'🚨 ui-size-change was never received. Make sure to call postMessage with "ui-size-change" with width and height and the target set to "*".',
+			'🚨 link message was never received. Make sure to call postMessage with "link" with url and the target set to "*".',
 			{ cause: e },
 		)
 	})
@@ -77,14 +82,17 @@ test('journal viewer sends ui-size-change message', async () => {
 	const messageContent = JSON.parse(textContent!)
 	expect(
 		messageContent,
-		'🚨 the ui-size-change message is not the correct format',
+		'🚨 the link message is not the correct format',
 	).toEqual({
-		type: 'ui-size-change',
+		type: 'link',
+		messageId: expect.any(String),
 		payload: {
-			height: expect.any(Number),
-			width: expect.any(Number),
+			url: expect.any(String),
 		},
 	})
+	// then click the "send" button
+	// no need to input anything in this case because there's no expected response
+	await page.getByRole('button', { name: 'send' }).click()
 })
 
 // because vite needs to optimize deps 😭😡

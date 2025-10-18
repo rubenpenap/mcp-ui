@@ -1,52 +1,47 @@
-# Dynamic Sizing
+# Navigate to Links
 
-<EpicVideo url="https://www.epicai.pro/workshops/day-5-6-mcp-ui/dynamic-sizing-rxiyf" />
+<EpicVideo url="https://www.epicai.pro/workshops/day-5-6-mcp-ui/links-j40ci" />
 
-👨‍💼 Users expect iframes to fit their content perfectly, not waste space or require scrolling. The journal viewer should automatically adjust to show exactly what's needed.
+👨‍💼 Our users want to be able to share how many entries they have in their journal on 𝕏. We can use `postMessage` to send a link to the host application to navigate to the 𝕏 intent page.
 
-```tsx
-const height = document.documentElement.clientHeight
-const width = document.documentElement.clientWidth
+Since iframes can't directly navigate their parent window, we need to communicate with the host application. The pattern is:
 
+1. **Generate unique ID** - Create a message ID to match requests with responses
+2. **Send message** - Use `window.parent.postMessage()` with type `'link'` and the URL
+3. **Listen for response** - Handle the `'ui-message-response'` from the host
+4. **Clean up** - Remove event listener when done
+
+The communication pattern looks like:
+
+```ts
+// Send request with unique ID
 window.parent.postMessage(
 	{
-		type: 'ui-size-change',
-		payload: { height, width },
+		type: 'link',
+		messageId: uniqueId,
+		payload: { url },
 	},
 	'*',
 )
+
+// Listen for matching response
+function handleMessage(event) {
+	if (
+		event.data.type === 'ui-message-response' &&
+		event.data.messageId === uniqueId
+	) {
+		// Handle success/error
+	}
+}
 ```
 
-Use `clientHeight` and `clientWidth` to measure the full content dimensions, then send a `ui-size-change` message to the parent window so it can resize the iframe accordingly.
+🧝‍♀️ I've set up the journal viewer with a "Share on X" button that needs to navigate to Twitter's intent page. You'll need to implement the communication function to make this work!
 
-The static `preferred-frame-size` from the previous exercise works for fixed layouts, but journal entries have varying content lengths. A short entry wastes space, while a long entry gets cut off.
+<callout-success>
+	🦉 Depending on how comfortable you are with browser APIs, you may struggle
+	with following the instructions. However, your AI assistant is really good at
+	browser APIs. Just feed it the instructions and you'll be set! If you don't
+	understand something, just ask it!
+</callout-success>
 
-<callout-warning>
-	Just make sure you utilize scrolled elements to avoid requesting a ton of
-	height or width with a lot of content.
-</callout-warning>
-
-```mermaid
-sequenceDiagram
-    participant User
-    participant Host
-    participant Iframe
-
-    User->>Host: Request taco map directions
-    Host->>Iframe: Load iframe with static size
-    Iframe->>Host: Send ui-lifecycle-iframe-ready
-    Iframe->>Iframe: Measure actual map content
-    Iframe->>Host: Send ui-size-change with real dimensions
-    Host->>Host: Resize iframe to fit map
-    Host->>User: Show perfectly sized taco map
-```
-
-<callout-info>
-	Measure after the component renders to get accurate dimensions. This typically
-	happens so fast the user won't notice.
-</callout-info>
-
-Now implement the size measurement to make the journal viewer fit perfectly.
-
-💰 I'll be in the instructions a bit because this isn't a React workshop, so if
-you're unfamiliar with React, don't worry.
+👨‍💼 Perfect! Let's implement that communication pattern.
