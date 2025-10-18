@@ -42,7 +42,7 @@ async function setupClient() {
 	}
 }
 
-test('journal viewer sends prompt message', async () => {
+test('journal viewer sends tool message', async () => {
 	await using setup = await setupClient()
 	const { client } = setup
 
@@ -68,15 +68,16 @@ test('journal viewer sends prompt message', async () => {
 
 	const iframe = page.frameLocator('iframe')
 
-	const viewDetailsButton = iframe
-		.getByRole('button', { name: 'Summarize' })
+	const deleteEntryButton = iframe
+		.getByRole('button', { name: 'Delete' })
 		.first()
-	await viewDetailsButton.click()
+	await deleteEntryButton.click()
+	await iframe.getByRole('button', { name: 'Confirm?' }).click()
 
-	const message = page.getByRole('log').getByText('prompt')
+	const message = page.getByRole('log').getByText('tool')
 	await message.waitFor({ timeout: 1000 }).catch((e) => {
 		throw new Error(
-			'🚨 prompt message was never received. Make sure to call sendMcpMessage with "prompt"',
+			'🚨 tool message was never received. Make sure to call sendMcpMessage with "tool"',
 			{ cause: e },
 		)
 	})
@@ -85,17 +86,29 @@ test('journal viewer sends prompt message', async () => {
 	const messageContent = JSON.parse(textContent!)
 	expect(
 		messageContent,
-		'🚨 the prompt message is not the correct format',
+		'🚨 the tool message is not the correct format',
 	).toEqual({
-		type: 'prompt',
+		type: 'tool',
 		messageId: expect.any(String),
 		payload: {
-			prompt: expect.any(String),
+			toolName: 'delete_entry',
+			params: { id: expect.any(Number) },
 		},
 	})
 	// then click the "send" button
 	// no need to input anything in this case because there's no expected response
+	await page
+		.getByRole('textbox', { name: /message input/i })
+		.fill('{"structuredContent": {"success": true}}')
 	await page.getByRole('button', { name: 'send' }).click()
+	await iframe
+		.getByText('Deleted')
+		.waitFor({ timeout: 1000 })
+		.catch((e) => {
+			throw new Error('🚨 delete_entry response was not processed properly', {
+				cause: e,
+			})
+		})
 })
 
 // because vite needs to optimize deps 😭😡

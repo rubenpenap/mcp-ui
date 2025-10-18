@@ -1,11 +1,13 @@
-import { sendMcpMessage, useMcpUiInit } from '#app/utils/mcp.ts'
-import { useDoubleCheck } from '#app/utils/misc.ts'
-import { useRef, useState, useTransition } from 'react'
+import { useState, useTransition, useRef } from 'react'
 import {
 	ErrorBoundary,
 	useErrorBoundary,
 	type FallbackProps,
 } from 'react-error-boundary'
+// 💰 you'll want this:
+// import { z } from 'zod'
+import { useMcpUiInit, sendMcpMessage } from '#app/utils/mcp.ts'
+import { useDoubleCheck } from '#app/utils/misc.ts'
 import { type Route } from './+types/journal-viewer.tsx'
 
 export async function loader({ context }: Route.LoaderArgs) {
@@ -208,6 +210,9 @@ function DeleteEntryError({ error, resetErrorBoundary }: FallbackProps) {
 	)
 }
 
+// 🐨 create a schema for the results of the delete_entry tool (check the worker/mcp/tools.ts file for the output schema)
+// 💰 the schema should be an object with a structuredContent property that is an object with a success property that is a boolean
+
 function DeleteEntryButtonImpl({
 	entry,
 	onDeleted,
@@ -222,6 +227,12 @@ function DeleteEntryButtonImpl({
 	const handleDelete = () => {
 		startTransition(async () => {
 			try {
+				// 🐨 replace this throw with await sendMcpMessage
+				// the type will be 'tool', the toolName will be 'delete_entry', and the params will be { id: entry.id }
+				// pass the schema you created above
+				// 🦉 the result of the sendMcpMessage call should be type safe thanks to your schema
+				// 🐨 if the result.structuredContent.success is true, call onDeleted
+				// 🐨 if the result.structuredContent.success is false, use showBoundary to show an error
 				throw new Error('Calling tools is not yet supported')
 			} catch (err) {
 				showBoundary(err)
