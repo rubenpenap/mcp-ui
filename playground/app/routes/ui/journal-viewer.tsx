@@ -1,11 +1,11 @@
-import { sendMcpMessage, useMcpUiInit } from '#app/utils/mcp.ts'
-import { useDoubleCheck } from '#app/utils/misc.ts'
-import { useRef, useState, useTransition } from 'react'
+import { useState, useTransition, useRef } from 'react'
 import {
 	ErrorBoundary,
 	useErrorBoundary,
 	type FallbackProps,
 } from 'react-error-boundary'
+import { useMcpUiInit, sendMcpMessage } from '#app/utils/mcp.ts'
+import { useDoubleCheck } from '#app/utils/misc.ts'
 import { type Route } from './+types/journal-viewer.tsx'
 
 export async function loader({ context }: Route.LoaderArgs) {
@@ -339,6 +339,8 @@ function SummarizeEntryButtonImpl({
 	const handleSummarize = () => {
 		startTransition(async () => {
 			try {
+				// 🐨 replace this throw with await sendMcpMessage
+				// the type will be 'prompt', the prompt will be `Please use the EpicMe get_entry tool to get entry ${entry.id} and provide a concise and insightful summary of it.`
 				throw new Error('Sending prompts is not yet supported')
 			} catch (err) {
 				showBoundary(err)

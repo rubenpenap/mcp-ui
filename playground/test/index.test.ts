@@ -42,7 +42,7 @@ async function setupClient() {
 	}
 }
 
-test('journal viewer sends tool message', async () => {
+test('journal viewer sends prompt message', async () => {
 	await using setup = await setupClient()
 	const { client } = setup
 
@@ -69,14 +69,14 @@ test('journal viewer sends tool message', async () => {
 	const iframe = page.frameLocator('iframe')
 
 	const viewDetailsButton = iframe
-		.getByRole('button', { name: 'View Details' })
+		.getByRole('button', { name: 'Summarize' })
 		.first()
 	await viewDetailsButton.click()
 
-	const message = page.getByRole('log').getByText('tool')
+	const message = page.getByRole('log').getByText('prompt')
 	await message.waitFor({ timeout: 1000 }).catch((e) => {
 		throw new Error(
-			'🚨 tool message was never received. Make sure to call sendMcpMessage with "tool"',
+			'🚨 prompt message was never received. Make sure to call sendMcpMessage with "prompt"',
 			{ cause: e },
 		)
 	})
@@ -85,13 +85,12 @@ test('journal viewer sends tool message', async () => {
 	const messageContent = JSON.parse(textContent!)
 	expect(
 		messageContent,
-		'🚨 the tool message is not the correct format',
+		'🚨 the prompt message is not the correct format',
 	).toEqual({
-		type: 'tool',
+		type: 'prompt',
 		messageId: expect.any(String),
 		payload: {
-			toolName: 'view_entry',
-			params: { id: expect.any(Number) },
+			prompt: expect.any(String),
 		},
 	})
 	// then click the "send" button

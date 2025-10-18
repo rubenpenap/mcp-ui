@@ -1,18 +1,23 @@
-# Call Tools
+# Send Prompts
 
-<EpicVideo url="https://www.epicai.pro/workshops/day-5-6-mcp-ui/tools-ow1ol" />
+<EpicVideo url="https://www.epicai.pro/workshops/day-5-6-mcp-ui/prompts-m0qlk" />
 
-👨‍💼 When users click "View Entry" on a journal entry, nothing happens. They need a way to trigger tool calls that fetch detailed data from the host application.
+👨‍💼 Our users expect the "Summarize" button to instantly craft a short, insightful take on the entry they're viewing. To make that happen, the UI needs to send a natural-language prompt to the host via our MCP bridge, then show the result without a page reload. If we don't deliver, people lose trust and the feature feels broken.
 
-You're going to build upon the abstraction you and 🧝‍♀️ Kellie built in the last exercise so you can use it for `tool` calls as well:
+Here's the pattern you'll use from components:
 
 ```ts
-await sendMcpMessage('tool', {
-	toolName: 'analyze_rock_sample',
-	params: { sampleId: 'mars-2024-001' },
+// Send a prompt message to the host
+await sendMcpMessage('prompt', {
+	prompt:
+		'Please ask CafeLedger get_balance for account espresso-ops and summarize the budget health.',
 })
 ```
 
-You need to add the 'tool' type to `sendMcpMessage` and wire up the actual tool call.
+What you need to build:
 
-Now, let's implement this to make those journal entries interactive.
+- Add a new `'prompt'` message type to `app/utils/mcp.ts` so the bridge can validate payloads.
+- Add a function overload for `sendMcpMessage('prompt', payload, options)` that mirrors the `'link'` overload but accepts `{ prompt: string }`.
+- In the summarize button component, call `sendMcpMessage('prompt', { prompt })`.
+
+👨‍💼 Let's wire up the prompt path so pressing "Summarize" works.
