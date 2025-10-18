@@ -1,15 +1,10 @@
-import {
-	// 💰 you'll need this to trigger the postMessage
-	// useEffect,
-	useState,
-	useTransition,
-} from 'react'
+import { useDoubleCheck } from '#app/utils/misc.ts'
+import { useEffect, useState, useTransition } from 'react'
 import {
 	ErrorBoundary,
 	useErrorBoundary,
 	type FallbackProps,
 } from 'react-error-boundary'
-import { useDoubleCheck } from '#app/utils/misc.ts'
 import { type Route } from './+types/journal-viewer.tsx'
 
 export async function loader({ context }: Route.LoaderArgs) {
@@ -23,11 +18,9 @@ export default function JournalViewer({ loaderData }: Route.ComponentProps) {
 		() => new Set([]),
 	)
 
-	// 💰 here's the useEffect:
-	// useEffect(() => {
-	// 	🐨 call window.parent.postMessage with the type 'ui-lifecycle-iframe-ready'
-	// 	and the wildcard '*' for the targetOrigin
-	// }, [])
+	useEffect(() => {
+		window.parent.postMessage({ type: 'ui-lifecycle-iframe-ready' }, '*')
+	}, [])
 
 	const handleEntryDeleted = (entryId: number) => {
 		setDeletedEntryIds((prev) => new Set([...prev, entryId]))
