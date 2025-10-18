@@ -24,7 +24,7 @@ type McpMessageReturnType<Options> = Promise<
 
 type McpMessageTypes = {
 	tool: { toolName: string; params: Record<string, unknown> }
-	// 🐨 add support for a 'prompt' type which has a payload of { prompt: string }
+	prompt: { prompt: string }
 	link: { url: string }
 }
 
@@ -36,8 +36,11 @@ function sendMcpMessage<Options extends MessageOptions>(
 	options?: Options,
 ): McpMessageReturnType<Options>
 
-// 🐨 add another override for the 'prompt' type
-// 💰 it should have the same signature as the 'link' type (except the type is 'prompt')
+function sendMcpMessage<Options extends MessageOptions>(
+	type: 'prompt',
+	payload: McpMessageTypes['prompt'],
+	options?: Options,
+): McpMessageReturnType<Options>
 
 function sendMcpMessage<Options extends MessageOptions>(
 	type: 'link',
