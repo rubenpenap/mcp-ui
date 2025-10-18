@@ -15,15 +15,26 @@ export function useMcpUiInit(rootRef: React.RefObject<HTMLDivElement | null>) {
 	}, [rootRef])
 }
 
-// 🐨 export a function called sendLinkMcpMessage that takes a url string and returns a promise
-// 🐨 it should:
-// - generate a random UUID for the message id (💰 you can use crypto.randomUUID())
-// - return a new Promise((resolve, reject) = {
-//	 - call window.parent.postMessage with the type 'link', the message id, and the payload { url } and targetOrigin '*'
-//	 - set up a function to handle the event (MessageEvent) from the parent window
-//		 - if the event.data.type is 'ui-message-response' grab the event.data's messageId and payload
-//		 - if the messageId matches the message id, remove the event listener
-//		 - if the payload.error exists, reject the promise with the error
-//		 - otherwise resolve with the payload.response
-//	 - add the "message" event listener to the window
-// })
+export function sendLinkMcpMessage(url: string) {
+	const messageId = crypto.randomUUID()
+
+	return new Promise((resolve, reject) => {
+		window.parent.postMessage(
+			{ type: 'link', messageId, payload: { url } },
+			'*',
+		)
+
+		function handleMessage(event: MessageEvent) {
+			if (event.data.type !== 'ui-message-response') return
+			if (event.data.messageId !== messageId) return
+			window.removeEventListener('message', handleMessage)
+
+			const { response, error } = event.data.payload
+
+			if (error) return reject(error)
+			return resolve(response)
+		}
+
+		window.addEventListener('message', handleMessage)
+	})
+}
