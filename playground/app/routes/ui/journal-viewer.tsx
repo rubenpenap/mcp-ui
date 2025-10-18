@@ -1,10 +1,10 @@
-import { useDoubleCheck } from '#app/utils/misc.ts'
 import { useEffect, useState, useTransition } from 'react'
 import {
 	ErrorBoundary,
 	useErrorBoundary,
 	type FallbackProps,
 } from 'react-error-boundary'
+import { useDoubleCheck } from '#app/utils/misc.ts'
 import { type Route } from './+types/journal-viewer.tsx'
 
 export async function loader({ context }: Route.LoaderArgs) {
