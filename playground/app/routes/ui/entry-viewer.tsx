@@ -1,18 +1,17 @@
-import { useState, useTransition, useRef } from 'react'
+import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
+import {
+	sendMcpMessage,
+	useMcpUiInit,
+	waitForRenderData,
+} from '#app/utils/mcp.ts'
+import { useDoubleCheck } from '#app/utils/misc.ts'
+import { useRef, useState, useTransition } from 'react'
 import {
 	ErrorBoundary,
 	useErrorBoundary,
 	type FallbackProps,
 } from 'react-error-boundary'
 import { z } from 'zod'
-import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
-import {
-	useMcpUiInit,
-	sendMcpMessage,
-	// 💰 you're gonna need this:
-	// waitForRenderData,
-} from '#app/utils/mcp.ts'
-import { useDoubleCheck } from '#app/utils/misc.ts'
 import { type Route } from './+types/entry-viewer.tsx'
 
 export async function clientLoader() {
@@ -30,10 +29,7 @@ export async function clientLoader() {
 		}),
 	})
 
-	// 🐨 Get the the renderData by calling waitForRenderData here with renderDataSchema
-
-	// 💣 delete this placeholder...
-	const renderData = {} as z.infer<typeof renderDataSchema>
+	const renderData = await waitForRenderData(renderDataSchema)
 
 	return { entry: renderData.entry }
 }
