@@ -1,4 +1,3 @@
-import { invariant } from '@epic-web/invariant'
 import { useState, useTransition, useRef } from 'react'
 import {
 	ErrorBoundary,
@@ -7,22 +6,67 @@ import {
 } from 'react-error-boundary'
 import { z } from 'zod'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
-import { useMcpUiInit, sendMcpMessage } from '#app/utils/mcp.ts'
+import {
+	useMcpUiInit,
+	sendMcpMessage,
+	// 💰 you're gonna need this:
+	// waitForRenderData,
+} from '#app/utils/mcp.ts'
 import { useDoubleCheck } from '#app/utils/misc.ts'
 import { type Route } from './+types/entry-viewer.tsx'
 
-export async function loader({ context, params }: Route.LoaderArgs) {
-	const entryId = z.coerce.number().parse(params.entryId)
-	const entry = await context.db.getEntry(entryId)
-	invariant(entry, `Entry with ID "${entryId}" not found`)
+export async function clientLoader() {
+	const renderDataSchema = z.object({
+		entry: z.object({
+			id: z.number(),
+			title: z.string(),
+			content: z.string(),
+			tags: z.array(z.object({ id: z.number(), name: z.string() })),
+			mood: z.string().optional(),
+			location: z.string().optional(),
+			weather: z.string().optional(),
+			createdAt: z.number(),
+			updatedAt: z.number(),
+		}),
+	})
 
-	const formattedEntry = {
-		...entry,
-		createdAtFormatted: new Date(entry.createdAt * 1000).toLocaleDateString(),
-		updatedAtFormatted: new Date(entry.updatedAt * 1000).toLocaleDateString(),
-	}
+	// 🐨 Get the the renderData by calling waitForRenderData here with renderDataSchema
 
-	return { entry: formattedEntry }
+	// 💣 delete this placeholder...
+	const renderData = {} as z.infer<typeof renderDataSchema>
+
+	return { entry: renderData.entry }
+}
+
+export function HydrateFallback() {
+	return (
+		<div className="flex min-h-48 flex-col items-center justify-center py-12">
+			<svg
+				className="text-muted-foreground mb-4 h-8 w-8 animate-spin"
+				xmlns="http://www.w3.org/2000/svg"
+				fill="none"
+				viewBox="0 0 24 24"
+				aria-label="Loading"
+			>
+				<circle
+					className="opacity-25"
+					cx="12"
+					cy="12"
+					r="10"
+					stroke="currentColor"
+					strokeWidth="4"
+				/>
+				<path
+					className="opacity-75"
+					fill="currentColor"
+					d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+				/>
+			</svg>
+			<p className="text-muted-foreground text-lg">
+				Waiting for journal entries...
+			</p>
+		</div>
+	)
 }
 
 export default function EntryViewerContent({
@@ -110,14 +154,15 @@ export default function EntryViewerContent({
 						<div className="flex items-center gap-2">
 							<span className="text-muted-foreground text-sm">📅</span>
 							<span className="text-muted-foreground text-sm font-medium">
-								Created: {entry.createdAtFormatted}
+								Created: {new Date(entry.createdAt * 1000).toLocaleDateString()}
 							</span>
 						</div>
 						{entry.updatedAt !== entry.createdAt && (
 							<div className="flex items-center gap-2">
 								<span className="text-muted-foreground text-sm">✏️</span>
 								<span className="text-muted-foreground text-sm font-medium">
-									Updated: {entry.updatedAtFormatted}
+									Updated:{' '}
+									{new Date(entry.updatedAt * 1000).toLocaleDateString()}
 								</span>
 							</div>
 						)}

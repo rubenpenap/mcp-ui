@@ -42,6 +42,7 @@ You can also help users add tags to their entries and get all tags for an entry.
 		await initializeResources(this)
 		await initializePrompts(this)
 	}
+
 	requireBaseUrl() {
 		const baseUrl = this.props?.baseUrl
 		invariant(baseUrl, 'Unexpected: baseUrl not set on agent')

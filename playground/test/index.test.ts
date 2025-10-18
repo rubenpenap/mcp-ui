@@ -46,9 +46,11 @@ test('journal viewer sends tool message', async () => {
 	await using setup = await setupClient()
 	const { client } = setup
 
-	const result = await client.callTool({ name: 'view_journal' }).catch((e) => {
-		throw new Error('🚨 view_journal tool call failed', { cause: e })
-	})
+	const result = await client
+		.callTool({ name: 'view_entry', arguments: { id: 1 } })
+		.catch((e) => {
+			throw new Error('🚨 view_entry tool call failed', { cause: e })
+		})
 
 	invariant(Array.isArray(result.content), '🚨 content is not an array')
 
@@ -68,47 +70,9 @@ test('journal viewer sends tool message', async () => {
 
 	const iframe = page.frameLocator('iframe')
 
-	const deleteEntryButton = iframe
-		.getByRole('button', { name: 'Delete' })
-		.first()
-	await deleteEntryButton.click()
-	await iframe.getByRole('button', { name: 'Confirm?' }).click()
-
-	const message = page.getByRole('log').getByText('tool')
-	await message.waitFor({ timeout: 1000 }).catch((e) => {
-		throw new Error(
-			'🚨 tool message was never received. Make sure to call sendMcpMessage with "tool"',
-			{ cause: e },
-		)
-	})
-
-	const textContent = await message.textContent()
-	const messageContent = JSON.parse(textContent!)
-	expect(
-		messageContent,
-		'🚨 the tool message is not the correct format',
-	).toEqual({
-		type: 'tool',
-		messageId: expect.any(String),
-		payload: {
-			toolName: 'delete_entry',
-			params: { id: expect.any(Number) },
-		},
-	})
-	// then click the "send" button
-	// no need to input anything in this case because there's no expected response
-	await page
-		.getByRole('textbox', { name: /message input/i })
-		.fill('{"structuredContent": {"success": true}}')
-	await page.getByRole('button', { name: 'send' }).click()
-	await iframe
-		.getByText('Deleted')
-		.waitFor({ timeout: 1000 })
-		.catch((e) => {
-			throw new Error('🚨 delete_entry response was not processed properly', {
-				cause: e,
-			})
-		})
+	const heading = iframe.getByRole('heading').first()
+	console.log(await heading.textContent())
+	await page.pause()
 })
 
 // because vite needs to optimize deps 😭😡

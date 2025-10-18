@@ -96,3 +96,12 @@ function sendMcpMessage(
 }
 
 export { sendMcpMessage }
+
+// 🐨 export a waitForRenderData function that works like sendMcpMessage, but for render data
+// 💰 it does NOT need a messageId
+// 🐨 Use the type 'ui-lifecycle-iframe-ready'
+// 🐨 handleMessage should check the event.data.type is 'ui-lifecycle-iframe-render-data'
+// 🐨 if the event.data.payload.error is present, return reject(error)
+// 🐨 if the event.data.payload.renderData is present, return resolve(renderData)
+// 💯 add schema as an optional parameter and parse the renderData if it is present
+// 🦺 if you'd like to make it more typesafe, make waitForRenderData a generic (withForRenderData<RenderData>), pass the generic type to the schema (z.ZodSchema<RenderData>) and set it as the return type (Promise<RenderData>)

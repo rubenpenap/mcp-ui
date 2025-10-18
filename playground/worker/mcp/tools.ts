@@ -459,10 +459,12 @@ export async function initializeTools(agent: EpicMeMCP) {
 			inputSchema: entryIdSchema,
 		},
 		async ({ id }) => {
+			// 🐨 get rid of the ${id} here:
 			const iframeUrl = new URL(
 				`/ui/entry-viewer/${id}`,
 				agent.requireBaseUrl(),
 			)
+			// 🐨 get the entry from the database and make sure it exists (use invariant)
 
 			return {
 				content: [
@@ -473,6 +475,8 @@ export async function initializeTools(agent: EpicMeMCP) {
 							iframeUrl: iframeUrl.toString(),
 						},
 						encoding: 'text',
+						// 🐨 create the uiMetadata object here.
+						// 🐨 set the 'initial-render-data' property to an object with the entry
 					}),
 				],
 			}

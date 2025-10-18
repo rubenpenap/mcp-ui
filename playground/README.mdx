@@ -1,55 +1,44 @@
-# Tool Results
+# Render Data
 
-<EpicVideo url="https://www.epicai.pro/workshops/day-5-6-mcp-ui/tool-results-18put" />
+<EpicVideo url="https://www.epicai.pro/workshops/day-5-6-mcp-ui/render-data-pa64m" />
 
-👨‍💼 When users interact with our journal entries, they expect immediate feedback and reliable actions. If a user deletes an entry, they need to know it actually worked - not just hope for the best. The problem is: how do we get structured, validated data back from our MCP tools so we can build intelligent workflows that respond appropriately to different outcomes?
+👨‍💼 We've got a new requirement coming up. We're going to be adding authorization to the MCP server, but our UI has no way to identify the user securely.
+
+The problem is that we need a way to pass protected data directly from the MCP server to the iframe component, eliminating the need for additional API calls while maintaining security boundaries.
+
+Instead, we can use MCP UI's **render data** to pass initial data directly to iframe components. This allows the server to provide all necessary context when creating UI resources.
 
 ```ts
-// Tool returns both human-readable and structured data
-const result = await sendMcpMessage(
-	'tool',
-	{
-		toolName: 'analyze_code',
-		params: { filePath: 'src/utils/validation.ts' },
-	},
-	{ schema: codeAnalysisSchema },
-)
-
-// Client can access structured data and respond intelligently
-const { metrics, suggestions, complexity } = result.structuredContent
-if (complexity > 10) {
-	showRefactorWarning(suggestions)
+// Server provides initial data with the UI resource
+return {
+	content: [
+		{
+			type: 'resource',
+			resource: {
+				uri: iframeUrl.toString(),
+				mimeType: 'text/html',
+				uiMetadata: {
+					'initial-render-data': { bookmarks },
+				},
+			},
+		},
+	],
 }
-updateCodeMetrics(metrics)
+
+// Client receives data as soon as it emits the `ui-lifecycle-iframe-ready` event
+window.addEventListener('message', function handleMessage(event: MessageEvent) {
+	if (event.data?.type !== 'ui-lifecycle-iframe-render-data') return
+	if (event.data.error) {
+		// event.data.error... handle it
+	} else {
+		const { bookmarks } = event.data.payload
+		// do stuff with this
+	}
+})
 ```
 
-To make this happen, we use Zod schemas to validate and type the structured content returned by MCP tools. This enables rich integrations where the client can understand and act on tool results programmatically, rather than requiring manual user intervention for every step.
+You need to implement render data for the entry viewer. The server should pass the entry data via `uiMetadata`, and the client should use `waitForRenderData` to receive it.
 
-The structured content is defined by the tool's `outputSchema` and validated using Zod schemas on the client side, ensuring type safety and reliable data flow between the MCP server and client applications.
+Your implementation of `waitForRenderData` should be a little more complete. If you need help, your AI assistant can help you with that! Just ask it!
 
-<callout-info>
-	With structured content, MCP clients can build sophisticated workflows where
-	tools can trigger automatic actions based on their results, creating a more
-	intelligent and responsive user experience.
-</callout-info>
-
-```mermaid
-sequenceDiagram
-    User->>Iframe: Click "Delete Entry"
-    Iframe->>App: Send tool message via postMessage
-    App->>MCP: Call delete_entry tool
-    MCP->>MCP: Process deletion
-    MCP->>App: Return structured result
-    App->>Iframe: Send result via postMessage
-    Iframe->>Iframe: Validate with Zod schema
-    Iframe->>Iframe: Check success status
-    Iframe->>User: Update UI based on result
-```
-
-The goal is to make tool interactions feel intelligent and responsive, so users can trust that their actions have real consequences and get immediate, accurate feedback about what happened.
-
-Remember, our `delete_entry` tool returns structured content with a `success` boolean. You'll need to create a Zod schema to validate this data and use it in your `sendMcpMessage` call to get type-safe access to the result!
-
-👨‍💼 Thanks Kellie!
-
-Now, start by creating the schema, implement the tool call, and handle both success and failure cases to make your journal deletion feel reliable and responsive.
+📜 [Passing Render Data to the iframe](https://mcpui.dev/guide/embeddable-ui#passing-render-data-to-the-iframe)
